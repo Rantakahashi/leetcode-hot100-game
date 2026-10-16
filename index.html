@@ -1,0 +1,1903 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>LeetCode 闯关 · Hot100 速刷</title>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<style>
+  :root{
+    --bg:#0e1116; --bg2:#161b22; --card:#1b2230; --card2:#222b3a;
+    --line:#2a3344; --txt:#e6edf3; --sub:#9aa7b8; --acc:#39d98a; --acc2:#5cc8ff;
+    --gold:#ffcb6b; --red:#ff6b6b; --easy:#3fb950; --mid:#d29922; --hard:#f85149;
+    --lock:#3a4456;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 600px at 70% -10%,#16324a 0%,var(--bg) 55%);color:var(--txt);
+    font-family:-apple-system,"Segoe UI","Microsoft YaHei",Roboto,sans-serif;}
+  a{color:var(--acc2);text-decoration:none}
+  .hidden{display:none!important}
+  /* 顶栏 */
+  header{position:sticky;top:0;z-index:20;backdrop-filter:blur(8px);
+    background:linear-gradient(180deg,rgba(14,17,22,.95),rgba(14,17,22,.75));
+    border-bottom:1px solid var(--line);padding:12px 18px;}
+  .hbar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;max-width:1100px;margin:0 auto}
+  .logo{font-weight:800;font-size:19px;letter-spacing:.5px;
+    background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .logo span{font-size:12px;color:var(--sub);-webkit-text-fill-color:var(--sub);font-weight:500}
+  .xpwrap{flex:1;min-width:200px}
+  .xptop{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-bottom:4px}
+  .xpbar{height:10px;border-radius:6px;background:var(--card2);overflow:hidden;border:1px solid var(--line)}
+  .xpfill{height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .5s}
+  .stat{display:flex;gap:14px;font-size:13px;color:var(--sub)}
+  .stat b{color:var(--gold);font-size:15px}
+  .rank{font-weight:800;color:var(--gold)}
+  .toolbtns{display:flex;gap:8px}
+  .tbtn{background:var(--card);border:1px solid var(--line);color:var(--sub);border-radius:8px;
+    padding:6px 10px;font-size:12px;cursor:pointer}
+  .tbtn:hover{border-color:var(--acc);color:var(--txt)}
+  .tbtn.on{border-color:var(--acc);color:var(--acc)}
+  /* 容器 */
+  main,section{max-width:1100px;margin:18px auto;padding:0 18px}
+  .ttl{font-size:15px;color:var(--sub);margin:6px 0 14px}
+  /* 世界卡片 */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+  .world{position:relative;background:linear-gradient(160deg,var(--card),var(--bg2));border:1px solid var(--line);
+    border-radius:14px;padding:14px 14px 12px;cursor:pointer;transition:.18s;overflow:hidden}
+  .world:hover{transform:translateY(-3px);border-color:var(--acc2)}
+  .world.locked{opacity:.55;cursor:not-allowed;filter:grayscale(.4)}
+  .world.locked:hover{transform:none;border-color:var(--line)}
+  .wnum{position:absolute;right:-8px;top:-10px;font-size:54px;font-weight:900;color:rgba(255,255,255,.05)}
+  .wname{font-weight:800;font-size:16px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .wmnem{font-size:12px;color:var(--acc);line-height:1.5;min-height:34px}
+  .wprog{margin-top:10px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--sub)}
+  .wbar{flex:1;height:7px;border-radius:5px;background:var(--card2);overflow:hidden}
+  .wbar>i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--acc));width:0}
+  .lockbadge{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px}
+  /* 关卡列表 */
+  .back{display:inline-flex;align-items:center;gap:6px;color:var(--sub);cursor:pointer;font-size:13px;margin-bottom:10px}
+  .back:hover{color:var(--acc2)}
+  .lv{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:11px 14px;margin-bottom:10px;cursor:pointer;transition:.15s}
+  .lv:hover{border-color:var(--acc2);transform:translateX(3px)}
+  .lv.locked{opacity:.5;cursor:not-allowed}
+  .lv.locked:hover{transform:none;border-color:var(--line)}
+  .lvno{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-weight:800;background:var(--card2);border:1px solid var(--line);font-size:14px}
+  .lv.passed .lvno{background:linear-gradient(160deg,var(--acc),#1f9d63);color:#06241a;border-color:transparent}
+  .lvmain{flex:1}
+  .lvtitle{font-weight:700;font-size:15px}
+  .lvsub{font-size:12px;color:var(--sub);margin-top:2px}
+  .diff{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:700}
+  .d1{background:rgba(63,185,80,.15);color:var(--easy)}
+  .d2{background:rgba(210,153,34,.15);color:var(--mid)}
+  .d3{background:rgba(248,81,73,.15);color:var(--hard)}
+  .star{color:var(--gold);font-size:16px}
+  /* 弹窗 */
+  .mask{position:fixed;inset:0;background:rgba(3,6,12,.7);z-index:50;display:flex;align-items:flex-start;
+    justify-content:center;padding:30px 14px;overflow:auto}
+  .modal{width:min(860px,100%);background:var(--bg2);border:1px solid var(--line);border-radius:16px;
+    padding:18px 20px 22px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .mhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .mtitle{font-size:19px;font-weight:800}
+  .msub{font-size:12px;color:var(--sub);margin-top:4px}
+  .x{background:none;border:none;color:var(--sub);font-size:22px;cursor:pointer;line-height:1}
+  .x:hover{color:var(--txt)}
+  .block{margin-top:16px;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:12px 14px}
+  .bt{font-size:13px;font-weight:800;color:var(--acc);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .frame{white-space:pre-wrap;font-size:13px;line-height:1.7;color:var(--txt)}
+  .mnem{font-size:13px;color:var(--gold);background:rgba(255,203,107,.08);border-left:3px solid var(--gold);
+    padding:8px 12px;border-radius:6px;margin-top:8px}
+  pre.code{background:#0b0f15;border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;
+    font-family:"SFMono-Regular",Consolas,Menlo,monospace;font-size:12.5px;line-height:1.65;color:#cfe3ff;margin:0}
+  .reveal{color:var(--acc2);font-size:12px;cursor:pointer;user-select:none}
+  .reveal:hover{text-decoration:underline}
+  /* 运行窗口 */
+  .ta{width:100%;min-height:150px;background:#0b0f15;border:1px solid var(--line);border-radius:10px;
+    color:#d6f5e3;font-family:Consolas,Menlo,monospace;font-size:12.5px;padding:10px;resize:vertical;line-height:1.6}
+  .runrow{display:flex;gap:8px;margin:8px 0}
+  .rbtn{background:linear-gradient(90deg,var(--acc),#1f9d63);color:#06241a;border:none;font-weight:800;
+    border-radius:8px;padding:8px 16px;cursor:pointer;font-size:13px}
+  .rbtn:disabled{opacity:.4;cursor:not-allowed}
+  .rbtn.ghost{background:var(--card2);color:var(--sub);border:1px solid var(--line)}
+  .out{background:#000;border:1px solid var(--line);border-radius:10px;padding:10px;min-height:46px;
+    font-family:Consolas,monospace;font-size:12.5px;white-space:pre-wrap;color:#9effa3}
+  .out.err{color:#ff9a9a}
+  /* 选择题 */
+  .quiz{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+  .opt{background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;cursor:pointer;
+    font-size:13px;transition:.12s}
+  .opt:hover{border-color:var(--acc2)}
+  .opt.ok{background:rgba(57,217,138,.18);border-color:var(--acc);color:var(--acc)}
+  .opt.no{background:rgba(248,81,73,.16);border-color:var(--hard);color:#ffb3b3}
+  .qhint{font-size:12px;margin-top:8px;min-height:16px}
+  .passbtn{margin-top:14px;width:100%;background:linear-gradient(90deg,var(--gold),var(--acc));color:#1a1300;
+    border:none;font-weight:900;font-size:15px;border-radius:10px;padding:12px;cursor:pointer}
+  .passbtn:disabled{opacity:.4;cursor:not-allowed;background:var(--card2);color:var(--sub)}
+  /* toast / 撒花 */
+  #toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:80;
+    background:var(--card);border:1px solid var(--acc);color:var(--txt);padding:10px 18px;border-radius:10px;
+    font-size:14px;font-weight:700;opacity:0;transition:.3s;pointer-events:none}
+  #toast.show{opacity:1;top:26px}
+  .confetti{position:fixed;top:-10px;width:9px;height:14px;z-index:70;pointer-events:none;border-radius:2px}
+  @keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.2}}
+  .foot{text-align:center;color:var(--sub);font-size:12px;margin:24px 0 40px}
+</style>
+</head>
+<body>
+<header>
+  <div class="hbar">
+    <div class="logo">⚔️ LeetCode 闯关 <span>Hot100 速刷</span></div>
+    <div class="xpwrap">
+      <div class="xptop"><span>等级进度</span><span id="xpnum">0 XP</span></div>
+      <div class="xpbar"><i class="xpfill" id="xpfill"></i></div>
+    </div>
+    <div class="stat">
+      <div>段位 <span class="rank" id="rank">青铜</span></div>
+      <div>通关 <b id="cleared">0</b></div>
+      <div>🔥 <b id="streak">0</b></div>
+    </div>
+    <div class="toolbtns">
+      <button class="tbtn" id="practiceBtn" title="解锁全部关卡，方便自由浏览">练习模式</button>
+      <button class="tbtn" id="resetBtn" title="清空所有通关进度">重置</button>
+    </div>
+  </div>
+</header>
+
+<main id="mapView">
+  <div class="ttl">🗺️ 选择大关 · 17 个题型章节，逐个击破（从上往下解锁）</div>
+  <div class="grid" id="worldGrid"></div>
+  <div class="foot">提示：每关先读「背记框架+口诀」→ 答对套路选择题 → 展开答案复刻 → 点「过关」。运行窗口可真跑代码（需联网加载 Python）。</div>
+</main>
+
+<section id="worldView" class="hidden">
+  <div class="back" id="backBtn">← 返回关卡地图</div>
+  <div class="ttl" id="worldTtl"></div>
+  <div id="lvList"></div>
+</section>
+
+<div id="modal" class="hidden"></div>
+<div id="toast"></div>
+
+<script>
+const CATS = {
+  arr:{name:"数组与哈希表",
+    frame:"核心套路：把 O(n²) 的暴力枚举用哈希表降到 O(n)（空间换时间）。\n常见三种用法：\n1) 两数之和型：边走边把已见元素存进 dict（值→下标），遇到新数先查「补数」在不在。\n2) 频次型：用 dict/collections.Counter 统计出现次数。\n3) 存在性型：把数组转成 set，O(1) 判断某数是否出现过。",
+    mnemonic:"口诀：见过没？没见过先存着，见过了就配对。"},
+  two:{name:"双指针 / 同向 / 对撞",
+    frame:"核心套路：用两个指针代替双重循环。\n• 对撞指针：左右往中间夹（盛水、回文、两数之和II、三数之和）。\n• 同向指针：快慢指针（删除倒数第N、环形链表）。\n• 关键：先排序（三数/四数之和必须排序去重）。",
+    mnemonic:"口诀：一头一尾往中夹；或一快一慢跟后面。"},
+  win:{name:"滑动窗口",
+    frame:"核心套路：维护一个可变长度的窗口 [left,right]，右指针扩张、左指针收缩，使窗口始终满足某条件。\n模板：\n  right 一直往右走；\n  不满足时 left 往右收缩；\n  记录窗口最优值。\n用于：最长无重复子串、最小覆盖子串、定长窗口。",
+    mnemonic:"口诀：右扩左缩保条件，窗口最优随手记。"},
+  str:{name:"字符串",
+    frame:"核心套路：字符串题多靠「栈 / 双指针 / 哈希计数」。\n• 括号匹配、解码 → 栈。\n• 回文、反转 → 双指针。\n• 异位词、计数 → Counter。\n• 子串查找 → 滑动窗口或 KMP（Hot100 一般窗口够用）。",
+    mnemonic:"口诀：括号用栈、回文两头夹、计数用 Counter。"},
+  list:{name:"链表",
+    frame:"核心套路：\n• 反转：三指针 pre/cur/nex 迭代。\n• 找中点/倒数第N：快慢指针（fast 走2步，slow 走1步）。\n• 环：快慢指针相遇再从头同步走。\n• 合并/重排：先断链再接。\n注意：多画图，指针改之前先保存 nex。",
+    mnemonic:"口诀：反转三指针，找点快慢追，环遇同步回。"},
+  stack:{name:"栈 / 单调栈 / 队列",
+    frame:"核心套路：\n• 合法括号、表达式 → 普通栈。\n• 找「左边/右边第一个更大/更小」→ 单调栈（栈内保持单调递增或递减，新元素来时弹出不满足的）。\n• 滑动窗口最大 → 单调队列（deque）。",
+    mnemonic:"口诀：下一个更大用单调栈，弹到能压再入栈。"},
+  tree:{name:"二叉树（遍历 / 递归）",
+    frame:"核心套路：90% 二叉树题是递归（DFS）。\n模板：\n  def dfs(node):\n      if not node: return 边界值\n      左 = dfs(node.left)\n      右 = dfs(node.right)\n      return 用 左/右/node 算出的结果\n前/中/后序 = 在「进入/中间/离开」时处理节点。层序用队列（BFS）。",
+    mnemonic:"口诀：空返回、左右递归、用左右拼答案。"},
+  bst:{name:"二叉搜索树 BST",
+    frame:"核心套路：BST 中序遍历是「升序」。\n• 验证 BST：中序遍历看是否严格递增；或递归传 (min,max) 范围。\n• 第 K 小：中序第 K 个。\n• 搜索/插入/删除：按 左<根<右 往下走。",
+    mnemonic:"口诀：BST 中序升序排，范围递归把关卡。"},
+  heap:{name:"堆 / 优先队列",
+    frame:"核心套路：要「前 K 大/小」「动态第 K」就用堆。\n• Python heapq 是最小堆。\n• 前 K 大 → 维护大小为 K 的最小堆（堆顶是这 K 个里最小的，即第 K 大）。\n• TopK 频 → Counter 后堆。",
+    mnemonic:"口诀：前 K 大用最小堆，堆顶就是分水岭。"},
+  graph:{name:"图 / BFS / DFS / 拓扑",
+    frame:"核心套路：\n• 网格连通块（岛屿）→  Flood Fill（DFS/BFS 染色）。\n• 有向无环判断/排序 → 拓扑排序（入度表 + 队列）。\n• 最短步数 → BFS（边权=1）。\n• 并查集 → 连通分量、冗余边。\nvisited 集合防重复访问。",
+    mnemonic:"口诀：连通染色 BFS/DFS，排序看入度，连通用并查。"},
+  back:{name:"回溯 / 子集排列组合",
+    frame:"核心套路：DFS + 撤销选择（回溯）。\n模板：\n  def back(path):\n      if 满足结束条件: 收集答案\n      for 每个候选 in 选择列表:\n          做选择; back(path+候选); 撤销选择\n剪枝：排序后跳过相同元素（去重）；超界提前 return。",
+    mnemonic:"口诀：选它、递归、撤它；重复先排序再跳过。"},
+  bin:{name:"二分查找",
+    frame:"核心套路：在「有序 / 有单调性」区间里找目标。\n模板：\n  l,r=0,len-1\n  while l<=r:\n      m=(l+r)//2\n      if 找到: ...\n      elif 偏小: l=m+1\n      else: r=m-1\n旋转/峰值时用 m 与边界比较判半边。",
+    mnemonic:"口诀：有序就二分，偏左 l=m+1，偏右 r=m-1。"},
+  dp:{name:"动态规划",
+    frame:"核心套路：dp[i] = 用前面的状态算当前。\n步骤：① 定义状态 ② 写转移方程 ③ 初始化 ④ 填表/滚动。\n• 一维（爬楼梯、打家劫舍）：dp[i]=max(dp[i-1],dp[i-2]+x)。\n• 二维（不同路径、LCS）：dp[i][j]=来自上/左。\n能滚动数组就滚动，省空间。",
+    mnemonic:"口诀：状态定义清，转移方程定，初始化别漏，能滚则滚。"},
+  greedy:{name:"贪心",
+    frame:"核心套路：每步选「当前最优」就能得到全局最优。\n• 跳跃游戏：维护能到的最远 reach。\n• 区间调度：按结束时间排序，能选就选。\n• 分发：排序后贪心分配。\n验证贪心正确性往往靠「交换论证」。",
+    mnemonic:"口诀：局部最优能全局，就贪；不行换 DP。"},
+  bit:{name:"位运算",
+    frame:"核心套路：\n• 异或 ^：相同为0、不同为1；a^a=0、a^0=a。可用于「只出现一次」。\n• 与 &：取某位、判奇偶、消最低位 (x & (x-1))。\n• 左移<<、右移>>。\n• 负数用补码：Python 下注意 ~x = -x-1。",
+    mnemonic:"口诀：异或消成对、与消末位、补码记得 -1。"},
+  design:{name:"设计题",
+    frame:"核心套路：把数据结构组合用。\n• LRU：dict + 双向链表（Python 用 OrderedDict / 自己写节点）。\n• 栈/队列互实现：用一个主结构 + 辅助。\n• Trie：每个节点是 {children:dict, is_end:bool}。\n• 随机集合：dict 值↔下标 + 列表，删除时与末位交换。",
+    mnemonic:"口诀：组合数据结构，LRU 用有序字典，随机靠交换。"},
+  math:{name:"数学 / 模拟",
+    frame:"核心套路：按规则逐步模拟，注意边界与溢出。\n• 反转整数：不断 %10 取末位、//10 去末位，乘10累加并判溢出。\n• 大数相乘/相加：小学竖式，用数组存每位。\n• 进制转换：除基取余 / 乘基累加。\n• 质数/丑数：打表或逐个判。",
+    mnemonic:"口诀：模拟走流程，进位借位盯仔细。"},
+};
+
+/* ===== 题目数据（逐行注释 + 可运行 demo） ===== */
+const P = [
+/* ---------- 数组与哈希表 ---------- */
+{n:1,t:"两数之和",d:1,c:"arr",idea:"边走边把已见元素存进字典（值→下标），遇到新数先查「补数」在不在。",
+code:`def twoSum(nums, target):
+    seen = {}                      # 字典：值 -> 下标，记录已经看过的数
+    for i, x in enumerate(nums):   # 依次遍历每个数 x，i 是它的下标
+        if target - x in seen:     # 需要的「补数」之前出现过吗？
+            return [seen[target - x], i]   # 出现过就返回两个下标
+        seen[x] = i                # 否则把自己记下来，留给后面的数配对
+    return []                      # 题目保证有解，正常不会走到这里`,
+demo:`print(twoSum([2,7,11,15], 9))   # 期望 [0,1]`},
+
+{n:49,t:"字母异位词分组",d:2,c:"arr",idea:"异位词排序后字符串相同，把「排序后的词」当字典的 key 归类。",
+code:`def groupAnagrams(strs):
+    from collections import defaultdict
+    g = defaultdict(list)          # key=排序后的词, value=原词列表
+    for s in strs:                 # 遍历每个单词
+        key = "".join(sorted(s))   # 排序后字符相同 => 是同一组异位词
+        g[key].append(s)           # 把原词归到对应组
+    return list(g.values())        # 返回所有分组`,
+demo:`print(groupAnagrams(["eat","tea","tan","ate","nat","bat"]))`},
+
+{n:128,t:"最长连续序列",d:2,c:"arr",idea:"先全部进 set，再只对「序列起点」（x-1 不在 set）的数向后数长度。",
+code:`def longestConsecutive(nums):
+    s = set(nums)                  # 转成集合，O(1) 判存在
+    best = 0                       # 记录最长长度
+    for x in s:                    # 遍历每个数
+        if x - 1 not in s:         # 只从「连续段起点」开始数，避免重复数
+            y = x; cur = 1         # y 往后走，cur 记当前段长度
+            while y + 1 in s:      # 只要下一个数也在集合里
+                y += 1; cur += 1   # 往后挪，长度+1
+            best = max(best, cur)  # 更新最大值
+    return best`,
+demo:`print(longestConsecutive([100,4,200,1,3,2]))   # 期望 4 (1,2,3,4)`},
+
+{n:238,t:"除自身以外数组的乘积",d:2,c:"arr",idea:"结果[i] = 左积[i] × 右积[i]，左右各扫一遍，空间 O(1)。",
+code:`def productExceptSelf(nums):
+    n = len(nums); ans = [1]*n     # 答案数组先全 1
+    left = 1                       # left = 当前 i 左边的乘积
+    for i in range(n):             # 第一遍：填左积
+        ans[i] = left              # 先放左边的累积乘积
+        left *= nums[i]            # 把当前数乘进 left，供下一位用
+    right = 1                      # right = 当前 i 右边的乘积
+    for i in range(n-1, -1, -1):   # 第二遍倒着：乘上右积
+        ans[i] *= right            # 左积 × 右积 = 最终结果
+        right *= nums[i]           # 把当前数乘进 right，供前一位用
+    return ans`,
+demo:`print(productExceptSelf([1,2,3,4]))   # 期望 [24,12,8,6]`},
+
+{n:560,t:"和为 K 的子数组",d:2,c:"arr",idea:"前缀和 + 哈希计数：找「前面有多少个前缀和 = 当前前缀和 - k」。",
+code:`def subarraySum(nums, k):
+    from collections import defaultdict
+    pre = 0; cnt = defaultdict(int); cnt[0] = 1   # pre 当前前缀和；cnt 统计各前缀和出现次数，0 出现1次
+    ans = 0                       # 满足条件的子数组个数
+    for x in nums:                # 遍历每个数
+        pre += x                  # 累加得到当前前缀和
+        ans += cnt[pre - k]       # 之前有多少个 (pre-k) 就能配出和为 k
+        cnt[pre] += 1             # 把当前前缀和计数 +1
+    return ans`,
+demo:`print(subarraySum([1,1,1], 2))   # 期望 2`},
+
+/* ---------- 双指针 ---------- */
+{n:11,t:"盛最多水的容器",d:2,c:"two",idea:"对撞指针：每次挪较短的那边（短板决定水量，挪长板不会更优）。",
+code:`def maxArea(height):
+    l, r = 0, len(height)-1       # 左右指针在两端
+    ans = 0                       # 记录最大面积
+    while l < r:                  # 两指针没相遇就继续
+        h = min(height[l], height[r])   # 高度由短板决定
+        ans = max(ans, h * (r-l)) # 面积 = 高 × 宽
+        if height[l] < height[r]: # 挪较短的那一边，才可能有更大面积
+            l += 1
+        else:
+            r -= 1
+    return ans`,
+demo:`print(maxArea([1,8,6,2,5,4,8,3,7]))   # 期望 49`},
+
+{n:15,t:"三数之和",d:2,c:"two",idea:"先排序，定一个数 + 对撞双指针找另两个；跳过重复值去重。",
+code:`def threeSum(nums):
+    nums.sort(); ans = []         # 必须先排序，才能双指针 + 去重
+    for i in range(len(nums)-2):  # 固定第一个数 i
+        if i>0 and nums[i]==nums[i-1]: continue   # 跳过重复的第一个数
+        if nums[i] > 0: break     # 已排序，最小都>0 后面不可能和为0
+        l, r = i+1, len(nums)-1   # 双指针在 i 右边区间
+        while l < r:              # 对撞找两数
+            s = nums[i]+nums[l]+nums[r]   # 三数之和
+            if s == 0:            # 正好等于 0
+                ans.append([nums[i],nums[l],nums[r]])
+                while l<r and nums[l]==nums[l+1]: l+=1   # 跳过重复左
+                while l<r and nums[r]==nums[r-1]: r-=1   # 跳过重复右
+                l += 1; r -= 1    # 同时内缩
+            elif s < 0: l += 1    # 和偏小，左指针右移变大
+            else: r -= 1          # 和偏大，右指针左移变小
+    return ans`,
+demo:`print(threeSum([-1,0,1,2,-1,-4]))   # 期望 [[-1,-1,2],[-1,0,1]]`},
+
+{n:42,t:"接雨水",d:3,c:"two",idea:"对每个位置，能接的雨 = min(左最高,右最高)-自身高度，左右各扫一遍。",
+code:`def trap(height):
+    if not height: return 0       # 空数组直接返回
+    n = len(height)
+    left = [0]*n; right = [0]*n   # 左右最大值数组
+    left[0] = height[0]           # 从左扫：记录到 i 为止的最大高度
+    for i in range(1,n): left[i] = max(left[i-1], height[i])
+    right[n-1] = height[n-1]      # 从右扫：记录到 i 为止的最大高度
+    for i in range(n-2,-1,-1): right[i] = max(right[i+1], height[i])
+    ans = 0                       # 总雨水量
+    for i in range(n):            # 每个位置能接的雨
+        ans += min(left[i], right[i]) - height[i]   # 短板减自身
+    return ans`,
+demo:`print(trap([0,1,0,2,1,0,1,3,2,1,2,1]))   # 期望 6`},
+
+{n:167,t:"两数之和 II（有序）",d:2,c:"two",idea:"数组已排序，对撞指针：和偏大右移、偏小左移。",
+code:`def twoSum(numbers, target):
+    l, r = 0, len(numbers)-1      # 双指针在两端
+    while l < r:                  # 没相遇就继续
+        s = numbers[l] + numbers[r]   # 当前两数之和
+        if s == target: return [l+1, r+1]   # 找到（下标从1开始）
+        elif s < target: l += 1   # 偏小，左移变大
+        else: r -= 1              # 偏大，右移变小
+    return []`,
+demo:`print(twoSum([2,7,11,15], 9))   # 期望 [1,2]`},
+
+{n:88,t:"合并两个有序数组",d:2,c:"two",idea:"从尾部往头填（避免覆盖），谁大填谁。",
+code:`def merge(nums1, m, nums2, n):
+    i, j, k = m-1, n-1, m+n-1     # i=nums1有效尾, j=nums2尾, k=结果尾
+    while j >= 0:                 # nums2 还有数就继续（nums1 剩余直接留着）
+        if i >= 0 and nums1[i] > nums2[j]:   # nums1 当前更大
+            nums1[k] = nums1[i]; i -= 1      # 填大的，i 前移
+        else:
+            nums1[k] = nums2[j]; j -= 1      # 否则填 nums2，j 前移
+        k -= 1                   # 结果位置前移
+    return nums1`,
+demo:`print(merge([1,2,3,0,0,0],3,[2,5,6],3))   # 期望 [1,2,2,3,5,6]`},
+
+{n:125,t:"验证回文串",d:1,c:"two",idea:"双指针：左右往中夹，跳过非字母数字，比较是否相同。",
+code:`def isPalindrome(s):
+    l, r = 0, len(s)-1            # 双指针在两端
+    while l < r:                  # 没相遇就继续
+        while l<r and not s[l].isalnum(): l+=1   # 左跳过非字母数字
+        while l<r and not s[r].isalnum(): r-=1   # 右跳过非字母数字
+        if s[l].lower() != s[r].lower(): return False   # 不对应不是回文
+        l += 1; r -= 1            # 都合法且相等，内缩
+    return True`,
+demo:`print(isPalindrome("A man, a plan, a canal: Panama"))   # 期望 True`},
+
+{n:344,t:"反转字符串",d:1,c:"two",idea:"对撞指针交换，经典热身。",
+code:`def reverseString(s):
+    s = list(s)                   # 字符串不可变，转成列表
+    l, r = 0, len(s)-1            # 双指针两端
+    while l < r:                  # 没相遇
+        s[l], s[r] = s[r], s[l]   # 交换
+        l += 1; r -= 1            # 内缩
+    return "".join(s)`,
+demo:`print(reverseString("hello"))   # 期望 "olleh"`},
+
+/* ---------- 滑动窗口 ---------- */
+{n:3,t:"无重复字符的最长子串",d:2,c:"win",idea:"右扩左缩：窗口内用 set 记录字符，遇重复就左缩到重复之后。",
+code:`def lengthOfLongestSubstring(s):
+    seen = set(); l = 0; ans = 0  # seen=窗口内字符, l=左边界, ans=最长
+    for r, c in enumerate(s):     # r 是右指针，逐个字符
+        while c in seen:          # 当前字符已在窗口里（重复）
+            seen.remove(s[l]); l += 1   # 左指针右移，把旧字符移出窗口
+        seen.add(c)               # 把当前字符加入窗口
+        ans = max(ans, r-l+1)     # 更新窗口最大长度
+    return ans`,
+demo:`print(lengthOfLongestSubstring("abcabcbb"))   # 期望 3`},
+
+{n:76,t:"最小覆盖子串",d:3,c:"win",idea:"右扩到满足条件，左缩到最小；用 need 计数目标字符、have 计数已满足。",
+code:`def minWindow(s, t):
+    from collections import Counter
+    need = Counter(t); missing = len(t)   # need=目标各字符数, missing=还差几个
+    l = 0; start = 0; minlen = float("inf")   # l=左边界, start=答案起点, minlen=答案长
+    for r, c in enumerate(s):       # r 右指针
+        if need[c] > 0: missing -= 1 # 当前字符是目标且还需，缺口-1
+        need[c] -= 1               # 该字符需求-1（多余的会被记成负数）
+        while missing == 0:        # 窗口已覆盖所有目标字符
+            if r-l+1 < minlen:     # 记录更短的答案
+                minlen = r-l+1; start = l
+            need[s[l]] += 1        # 左边界要移出，归还它的需求
+            if need[s[l]] > 0: missing += 1   # 若移出后该字符不够了，缺口+1
+            l += 1                 # 左指针右移收缩
+    return "" if minlen==float("inf") else s[start:start+minlen]`,
+demo:`print(minWindow("ADOBECODEBANC","ABC"))   # 期望 "BANC"`},
+
+{n:438,t:"找到字符串中所有字母异位词",d:2,c:"win",idea:"定长窗口（长度=len(p)），用 need/have 计数，匹配就记录起点。",
+code:`def findAnagrams(s, p):
+    from collections import Counter
+    need = Counter(p); k = len(p)  # need=目标字符计数, k=窗口长度
+    have = 0; ans = []             # have=已满足的字符种数, ans=答案起点
+    win = {}                       # win=窗口内字符计数
+    for r, c in enumerate(s):      # r 右指针
+        win[c] = win.get(c,0)+1    # 当前字符进窗口
+        if win[c] == need.get(c,0): have += 1   # 该字符达标，种数+1
+        if r >= k:                 # 窗口超长，要移出最左字符
+            lc = s[r-k]            # 最左字符
+            if win[lc] == need.get(lc,0): have -= 1   # 移出前刚好达标，种数-1
+            win[lc] -= 1           # 移出
+        if have == len(need):      # 所有字符都达标 = 异位词
+            ans.append(r-k+1)      # 记录窗口起点
+    return ans`,
+demo:`print(findAnagrams("cbaebabacd","abc"))   # 期望 [0,6]`},
+
+{n:567,t:"字符串的排列",d:2,c:"win",idea:"和异位词一样，只是窗口内匹配就返回 True（不必收集全部）。",
+code:`def checkInclusion(s1, s2):
+    from collections import Counter
+    need = Counter(s1); k = len(s1)   # need=短串字符计数, k=窗口长
+    win = {}; have = 0           # 窗口计数 + 已达标种数
+    for r, c in enumerate(s2):   # 右指针
+        win[c] = win.get(c,0)+1  # 进窗口
+        if win[c] == need.get(c,0): have += 1   # 达标种数+1
+        if r >= k:               # 超长需移出最左
+            lc = s2[r-k]
+            if win[lc] == need.get(lc,0): have -= 1
+            win[lc] -= 1
+        if have == len(need): return True   # 找到排列
+    return False`,
+demo:`print(checkInclusion("ab","eidbaooo"))   # 期望 True`},
+
+{n:239,t:"滑动窗口最大值",d:3,c:"win",idea:"单调队列（递减）：队首是窗口最大；入队先弹出比它小的，出队时若队首滑出窗口就 pop。",
+code:`def maxSlidingWindow(nums, k):
+    from collections import deque
+    dq = deque(); ans = []        # dq 存下标，保持对应值递减
+    for i, x in enumerate(nums):  # 遍历每个数
+        while dq and nums[dq[-1]] <= x: dq.pop()   # 弹出队尾比 x 小的（它们没用了）
+        dq.append(i)              # x 入队尾
+        if dq[0] <= i-k: dq.popleft()   # 队首已滑出窗口，移出
+        if i >= k-1: ans.append(nums[dq[0]])   # 窗口满了，队首即最大
+    return ans`,
+demo:`print(maxSlidingWindow([1,3,-1,-3,5,3,6,7],3))   # 期望 [3,3,5,5,6,7]`},
+
+/* ---------- 字符串 ---------- */
+{n:5,t:"最长回文子串",d:2,c:"str",idea:"每个位置当中心向两边扩展（奇/偶两种情况），记录最长。",
+code:`def longestPalindrome(s):
+    start = 0; length = 0         # 答案起点和长度
+    def expand(l, r):             # 从 l,r 向两边扩
+        nonlocal start, length
+        while l>=0 and r<len(s) and s[l]==s[r]:   # 两边相等就继续扩
+            if r-l+1 > length:    # 发现更长的回文
+                start, length = l, r-l+1   # 更新答案
+            l -= 1; r += 1        # 继续外扩
+    for i in range(len(s)):       # 每个位置都当一次中心
+        expand(i, i)              # 奇数长度（单中心）
+        expand(i, i+1)            # 偶数长度（双中心）
+    return s[start:start+length]`,
+demo:`print(longestPalindrome("babad"))   # 期望 "bab" 或 "aba"`},
+
+{n:14,t:"最长公共前缀",d:1,c:"str",idea:"拿第一个串当基准，逐字符和其它串比，不一致就截断。",
+code:`def longestCommonPrefix(strs):
+    if not strs: return ""        # 空列表直接返回
+    pre = strs[0]                 # 以第一个串为基准
+    for s in strs[1:]:            # 和其余每个串比较
+        i = 0                     # 当前比较到第几位
+        while i < len(pre) and i < len(s) and pre[i]==s[i]:
+            i += 1                # 相同就后移
+        pre = pre[:i]             # 截断到相同部分
+        if not pre: return ""     # 已为空，提前结束
+    return pre`,
+demo:`print(longestCommonPrefix(["flower","flow","flight"]))   # 期望 "fl"`},
+
+{n:20,t:"有效的括号",d:1,c:"str",idea:"栈：遇左括号入栈，遇右括号看栈顶是否匹配。",
+code:`def isValid(s):
+    st = []; pair = {")":"(","]":"[","}":"{"}   # 右->左 映射
+    for c in s:                  # 遍历每个字符
+        if c in "([{": st.append(c)   # 左括号入栈
+        elif not st or st.pop() != pair[c]: return False   # 右括号：栈空或不匹配则非法
+    return not st                # 最后栈应清空才合法`,
+demo:`print(isValid("()[]{}"))   # 期望 True`},
+
+{n:22,t:"括号生成",d:2,c:"str",idea:"回溯：左括号没用完就能加，右括号少于左括号才能加。",
+code:`def generateParenthesis(n):
+    ans = []                     # 收集所有合法组合
+    def back(open_n, close_n, path):   # open_n=已用左括号数, close_n=已用右括号数
+        if len(path) == 2*n:     # 长度满 2n 说明凑齐一组
+            ans.append(path); return
+        if open_n < n: back(open_n+1, close_n, path+"(")   # 左括号没满就能加
+        if close_n < open_n: back(open_n, close_n+1, path+")")   # 右<左 才能加右
+    back(0, 0, "")               # 从空串开始
+    return ans`,
+demo:`print(generateParenthesis(3))`},
+
+{n:28,t:"找出字符串中第一个匹配项的下标",d:2,c:"str",idea:"朴素匹配：主串每位当起点比对模式串；Hot100 用双指针即可。",
+code:`def strStr(haystack, needle):
+    n, m = len(haystack), len(needle)   # 主串长 n，模式长 m
+    for i in range(n-m+1):        # i 是主串起点
+        if haystack[i:i+m] == needle:   # 切出等长片段比较
+            return i               # 匹配成功返回起点
+    return -1                     # 没找到`,
+demo:`print(strStr("sadbutsad","sad"))   # 期望 0`},
+
+{n:8,t:"字符串转换整数 (atoi)",d:2,c:"str",idea:"按规则逐步模拟：去空格→符号→读数字→防溢出。",
+code:`def myAtoi(s):
+    s = s.strip()                # 先去掉首尾空格
+    if not s: return 0           # 空串返回 0
+    sign = 1; i = 0              # sign 符号, i 指针
+    if s[0] in "+-":             # 处理正负号
+        sign = -1 if s[0]=="-" else 1; i = 1
+    ans = 0                      # 结果累加
+    while i < len(s) and s[i].isdigit():   # 只读连续数字
+        ans = ans*10 + int(s[i])  # 拼到结果末尾
+        if sign*ans > 2**31-1: return 2**31-1   # 上溢封顶
+        if sign*ans < -2**31: return -2**31     # 下溢封底
+        i += 1
+    return sign * ans`,
+demo:`print(myAtoi("   -42"))   # 期望 -42`},
+
+{n:151,t:"反转字符串中的单词",d:2,c:"str",idea:"按空格切、过滤空串、反转列表、再拼。",
+code:`def reverseWords(s):
+    words = s.split()            # split() 按空白切并自动丢掉空串
+    words.reverse()              # 反转单词顺序
+    return " ".join(words)       # 用空格拼回`,
+demo:`print(reverseWords("  hello world  "))   # 期望 "world hello"`},
+
+{n:387,t:"字符串中的第一个唯一字符",d:1,c:"str",idea:"Counter 统计频次，再从头找第一个频次为 1 的。",
+code:`def firstUniqChar(s):
+    from collections import Counter
+    cnt = Counter(s)             # 统计每个字符出现次数
+    for i, c in enumerate(s):    # 按原顺序遍历
+        if cnt[c] == 1: return i # 第一个只出现一次的字符下标
+    return -1`,
+demo:`print(firstUniqChar("leetcode"))   # 期望 0`},
+
+{n:383,t:"赎金信",d:1,c:"str",idea:" magazine 的字符计数要覆盖 ransomNote 的字符计数。",
+code:`def canConstruct(ransomNote, magazine):
+    from collections import Counter
+    if len(ransomNote) > len(magazine): return False   # 长度都不够直接 False
+    cm = Counter(magazine)        # 杂志字符计数
+    for c in ransomNote:          # 遍历勒索信每个字符
+        if cm[c] <= 0: return False   # 杂志里没有/用完了
+        cm[c] -= 1                # 用掉一个
+    return True`,
+demo:`print(canConstruct("aa","aab"))   # 期望 True`},
+
+/* ---------- 链表 ---------- */
+{n:160,t:"相交链表",d:1,c:"list",idea:"双指针走两条路：a走完走b，b走完走a，相遇点即交点（路程相同）。",
+code:`def getIntersectionNode(headA, headB):
+    a, b = headA, headB           # 两个指针分别从头开始
+    while a is not b:             # 没相遇就继续（含都到 None 时相等退出）
+        a = a.next if a else headB   # a 走完就转到 b 头
+        b = b.next if b else headA   # b 走完就转到 a 头
+    return a                      # 相遇点（或 None）`,
+demo:`# 见链表结构较复杂，这里用值示意逻辑：链表相交时返回交点节点`},
+
+{n:206,t:"反转链表",d:1,c:"list",idea:"三指针 pre/cur/nex 迭代：每次把 cur.next 指向 pre。",
+code:`def reverseList(head):
+    pre, cur = None, head         # pre 指向前一个（初始无）, cur 指向当前
+    while cur:                    # 没走到尾
+        nex = cur.next            # 先保存下一个节点（否则会断链）
+        cur.next = pre            # 反转：当前指向前面
+        pre = cur; cur = nex      # pre 和 cur 一起后移
+    return pre                    # 最后 pre 是新头`,
+demo:`# 单测：把 [1,2,3] 反转得到 [3,2,1]（链表需构造节点，逻辑见 reverseList）`},
+
+{n:21,t:"合并两个有序链表",d:1,c:"list",idea:"双指针比较，谁小接谁，用哨兵节点简化。",
+code:`def mergeTwoLists(l1, l2):
+    dummy = cur = ListNode(0)     # 哨兵节点，cur 指向结果尾
+    while l1 and l2:              # 两个都还有
+        if l1.val < l2.val:       # 谁小接谁
+            cur.next = l1; l1 = l1.next
+        else:
+            cur.next = l2; l2 = l2.next
+        cur = cur.next            # 结果尾后移
+    cur.next = l1 or l2           # 剩的非空直接接上
+    return dummy.next`,
+demo:`# 合并 [1,2,4] 与 [1,3,4] => [1,1,2,3,4,4]`},
+
+{n:234,t:"回文链表",d:2,c:"list",idea:"快慢指针找中点→反转后半→比较前后两半。",
+code:`def isPalindrome(head):
+    slow = fast = head           # 快慢指针
+    while fast and fast.next:     # 快走2步慢走1步
+        slow = slow.next; fast = fast.next.next
+    pre = None; cur = slow       # 从中点开始反转后半
+    while cur:
+        nex = cur.next; cur.next = pre; pre = cur; cur = nex
+    first, second = head, pre     # 前半 与 反转后的后半
+    while second:                 # 比到后半结束
+        if first.val != second.val: return False
+        first = first.next; second = second.next
+    return True`,
+demo:`# [1,2,2,1] 是回文 => True`},
+
+{n:141,t:"环形链表",d:1,c:"list",idea:"快慢指针：有环则必相遇。",
+code:`def hasCycle(head):
+    slow = fast = head           # 快慢指针同起点
+    while fast and fast.next:     # 快指针能走
+        slow = slow.next          # 慢走1步
+        fast = fast.next.next     # 快走2步
+        if slow is fast: return True   # 相遇说明有环
+    return False`,
+demo:`# 有环返回 True，无环返回 False`},
+
+{n:142,t:"环形链表 II",d:2,c:"list",idea:"相遇后，一个指针回 head，两指针同速走，再相遇即入环点。",
+code:`def detectCycle(head):
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next; fast = fast.next.next
+        if slow is fast: break    # 先找到相遇点
+    else:
+        return None               # 无环
+    slow = head                   # 一个指针拉回起点
+    while slow is not fast:       # 同速走
+        slow = slow.next; fast = fast.next
+    return slow                   # 再相遇 = 入环点`,
+demo:`# 返回入环的第一个节点`},
+
+{n:19,t:"删除链表的倒数第 N 个结点",d:2,c:"list",idea:"快慢指针：快先走 N 步，再一起走，快到尾时慢在待删前。",
+code:`def removeNthFromEnd(head, n):
+    dummy = ListNode(0, head)     # 哨兵，防删头
+    fast = slow = dummy           # 快慢都从哨兵出发
+    for _ in range(n): fast = fast.next   # 快先走 n 步
+    while fast.next:              # 快到尾时停
+        fast = fast.next; slow = slow.next   # 慢跟着走
+    slow.next = slow.next.next    # 删掉慢的下一个
+    return dummy.next`,
+demo:`# [1,2,3,4,5] 删倒数第2 => [1,2,3,5]`},
+
+{n:2,t:"两数相加",d:2,c:"list",idea:"竖式加法：逐位相加+进位，建新链表。",
+code:`def addTwoNumbers(l1, l2):
+    dummy = cur = ListNode(0); carry = 0   # 哨兵, 当前尾, 进位
+    while l1 or l2 or carry:     # 还有数或还有进位
+        s = carry                # 本位和 = 进位
+        if l1: s += l1.val; l1 = l1.next   # 加 l1 当前位
+        if l2: s += l2.val; l2 = l2.next   # 加 l2 当前位
+        carry = s // 10          # 新进位
+        cur.next = ListNode(s % 10); cur = cur.next   # 余数入新链表
+    return dummy.next`,
+demo:`# [2,4,3]+[5,6,4] => [7,0,8] 表示 342+465=807`},
+
+{n:138,t:"随机链表的复制",d:2,c:"list",idea:"原节点后插复制节点→接 random→拆成两条。",
+code:`def copyRandomList(head):
+    if not head: return None
+    cur = head
+    while cur:                   # 第一步：每个原节点后插一个复制节点
+        nxt = cur.next
+        cur.next = Node(cur.val); cur.next.next = nxt
+        cur = nxt
+    cur = head
+    while cur:                   # 第二步：接 random（指向原 random 的复制）
+        if cur.random: cur.next.random = cur.random.next
+        cur = cur.next.next
+    old = head; new = head.next; res = new   # 第三步：拆链
+    while old:
+        old.next = old.next.next
+        if new.next: new.next = new.next.next
+        old = old.next; new = new.next
+    return res`,
+demo:`# 复制带 random 指针的链表`},
+
+{n:25,t:"K 个一组翻转链表",d:3,c:"list",idea:"每 K 个用反转子函数翻转，不足 K 个保持原样。",
+code:`def reverseKGroup(head, k):
+    def len_of(h):              # 数长度辅助
+        n=0
+        while h: n+=1; h=h.next
+        return n
+    dummy = ListNode(0, head); pre = dummy   # pre 指向上一组尾
+    while True:
+        cur = pre.next
+        if len_of(cur) < k: break   # 剩余不足 k 个，不再翻
+        # 翻转接下来的 k 个
+        prev = None; p = cur
+        for _ in range(k):
+            nxt = p.next; p.next = prev; prev = p; p = nxt
+        pre.next = prev; cur.next = p   # 接回主链
+        pre = cur              # 移动 pre 到下一组前
+    return dummy.next`,
+demo:`# [1,2,3,4,5] k=2 => [2,1,4,3,5]`},
+
+/* ---------- 栈 / 单调栈 / 队列 ---------- */
+{n:155,t:"最小栈",d:1,c:"stack",idea:"用pair (值, 当前最小值) 同步压栈，pop 不影响最小值。",
+code:`class MinStack:
+    def __init__(self):
+        self.st = []             # 栈存 (值, 到此处为止的最小值)
+    def push(self, x):
+        m = min(x, self.st[-1][1]) if self.st else x   # 当前最小 = min(新值, 栈顶最小)
+        self.st.append((x, m))   # 一起压入
+    def pop(self):
+        self.st.pop()            # 弹出即可，最小值在下一对里
+    def top(self):
+        return self.st[-1][0]    # 栈顶的值
+    def getMin(self):
+        return self.st[-1][1]    # 栈顶存的最小值`,
+demo:`m=MinStack(); m.push(-2); m.push(0); m.push(-3); print(m.getMin())   # 期望 -3`},
+
+{n:84,t:"柱状图中最大的矩形",d:3,c:"stack",idea:"单调栈（递增）：每个柱子找左右第一个更矮的，高×(右-左-1)。",
+code:`def largestRectangleArea(heights):
+    heights = heights + [0]      # 末尾补 0，迫使栈里全部结算
+    st = []; ans = 0             # st 存下标（对应高度递增）, ans 最大面积
+    for i, h in enumerate(heights):
+        while st and heights[st[-1]] > h:   # 当前更矮，弹出栈顶结算
+            hh = heights[st.pop()]   # 弹出柱的高度
+            w = i - (st[-1] if st else -1) - 1   # 宽度 = 右边界 - 左边界 -1
+            ans = max(ans, hh*w)    # 更新面积
+        st.append(i)                # 当前下标入栈
+    return ans`,
+demo:`print(largestRectangleArea([2,1,5,6,2,3]))   # 期望 10`},
+
+{n:394,t:"字符串解码",d:2,c:"stack",idea:"遇数字收集、遇[压栈、遇]弹出拼接后乘倍数再压回。",
+code:`def decodeString(s):
+    st = []; cur = ""; num = 0   # st 存 (已得字符串,倍数), cur=当前串, num=当前数字
+    for c in s:                  # 遍历字符
+        if c.isdigit(): num = num*10 + int(c)   # 多位数字累加
+        elif c == "[": st.append((cur, num)); cur=""; num=0   # 压栈，准备读括号内
+        elif c == "]":
+            prev, k = st.pop()   # 取出之前的串和倍数
+            cur = prev + cur*k    # 当前串重复 k 次接回
+        else: cur += c           # 普通字母追加
+    return cur`,
+demo:`print(decodeString("3[a2[c]]"))   # 期望 "accaccacc"`},
+
+{n:739,t:"每日温度",d:2,c:"stack",idea:"单调栈（递减）：栈存下标，遇更高温度就结算栈顶的等待天数。",
+code:`def dailyTemperatures(t):
+    n = len(t); ans = [0]*n; st = []   # ans 等待天数, st 存下标（温度递减）
+    for i, x in enumerate(t):      # 遍历每天温度
+        while st and t[st[-1]] < x:   # 当前更热，结算栈顶
+            i0 = st.pop()          # 栈顶那天
+            ans[i0] = i - i0       # 等了几天
+        st.append(i)               # 当前下标入栈
+    return ans`,
+demo:`print(dailyTemperatures([73,74,75,71,69,72,76,73]))   # 期望 [1,1,4,2,1,1,0,0]`},
+
+{n:150,t:"逆波兰表达式求值",d:2,c:"stack",idea:"遇数字入栈，遇运算符取栈顶两数以右为后操作数计算。",
+code:`def evalRPN(tokens):
+    st = []                       # 操作数栈
+    for tok in tokens:            # 遍历每个 token
+        if tok in "+-*/":         # 是运算符
+            b = st.pop(); a = st.pop()   # 注意先弹出的是右操作数
+            if tok=="+": st.append(a+b)
+            elif tok=="-": st.append(a-b)
+            elif tok=="*": st.append(a*b)
+            else: st.append(int(a/b))   # 除法向零取整
+        else:
+            st.append(int(tok))    # 数字入栈
+    return st[0]`,
+demo:`print(evalRPN(["2","1","+","3","*"]))   # 期望 9`},
+
+{n:224,t:"基本计算器",d:3,c:"stack",idea:"处理正负号和括号：用栈保存符号与外层结果。",
+code:`def calculate(s):
+    st = []; sign = 1; ans = 0; i = 0   # st 存括号前的(结果,符号), sign 当前符号
+    while i < len(s):
+        c = s[i]
+        if c.isdigit():             # 读连续数字
+            num = 0
+            while i<len(s) and s[i].isdigit(): num=num*10+int(s[i]); i+=1
+            ans += sign*num; i-=1   # 累加到结果
+        elif c == "+": sign = 1     # 正号
+        elif c == "-": sign = -1    # 负号
+        elif c == "(": st.append((ans, sign)); ans=0; sign=1   # 入栈保存，进括号
+        elif c == ")":              # 出括号，合并外层
+            prev_ans, prev_sign = st.pop(); ans = prev_ans + prev_sign*ans
+        i += 1
+    return ans`,
+demo:`print(calculate("(1+(4+5+2)-3)+(6+8)"))   # 期望 23`},
+
+/* ---------- 二叉树 ---------- */
+{n:94,t:"二叉树的中序遍历",d:1,c:"tree",idea:"递归：左→中→右；或显式栈迭代。",
+code:`def inorderTraversal(root):
+    ans = []                      # 收集结果
+    def dfs(node):               # 递归
+        if not node: return       # 空节点返回
+        dfs(node.left)            # 先左
+        ans.append(node.val)      # 再中（处理当前节点）
+        dfs(node.right)           # 后右
+    dfs(root)
+    return ans`,
+demo:`# 中序 [1,null,2,3] => [1,3,2]`},
+
+{n:104,t:"二叉树的最大深度",d:1,c:"tree",idea:"递归：深度 = 1 + max(左深, 右深)。",
+code:`def maxDepth(root):
+    if not root: return 0         # 空节点深度 0
+    return 1 + max(maxDepth(root.left), maxDepth(root.right))   # 左右取大 +1`,
+demo:`# 深度为 3 的树返回 3`},
+
+{n:226,t:"翻转二叉树",d:1,c:"tree",idea:"递归：交换左右子树后返回。",
+code:`def invertTree(root):
+    if not root: return None      # 空返回
+    root.left, root.right = root.right, root.left   # 交换左右
+    invertTree(root.left); invertTree(root.right)   # 递归翻转
+    return root`,
+demo:`# 翻转后左右子树互换`},
+
+{n:101,t:"对称二叉树",d:1,c:"tree",idea:"递归比较：左的左 vs 右的右，左的右 vs 右的左。",
+code:`def isSymmetric(root):
+    def eq(a, b):                 # 判断两子树是否镜像相等
+        if not a and not b: return True    # 都空
+        if not a or not b: return False    # 一个空一个不空
+        return a.val==b.val and eq(a.left,b.right) and eq(a.right,b.left)
+    return eq(root, root) if root else True`,
+demo:`# 对称树返回 True`},
+
+{n:105,t:"从前序与中序遍历构造二叉树",d:2,c:"tree",idea:"前序第一位=根；中序里根左边是左子树。用哈希定位根。",
+code:`def buildTree(preorder, inorder):
+    idx = {v:i for i,v in enumerate(inorder)}   # 中序值->下标，O(1) 定位根
+    def build(pl, pr, il, ir):   # 前序区间[pl,pr], 中序区间[il,ir]
+        if pl>pr: return None     # 区间空
+        root = TreeNode(preorder[pl])   # 前序首位是根
+        k = idx[root.val]         # 根在中序的位置
+        leftsz = k - il           # 左子树大小
+        root.left = build(pl+1, pl+leftsz, il, k-1)   # 递归建左
+        root.right = build(pl+leftsz+1, pr, k+1, ir)   # 递归建右
+        return root
+    return build(0, len(preorder)-1, 0, len(inorder)-1)`,
+demo:`# 前序[3,9,20,15,7] 中序[9,3,15,20,7] => 根3，左9，右20`},
+
+{n:114,t:"二叉树展开为链表",d:2,c:"tree",idea:"先存右子树，把左子树接到右，再接到原右链末尾。",
+code:`def flatten(root):
+    cur = root
+    while cur:                    # 遍历每个节点
+        if cur.left:              # 有左子树
+            pre = cur.left
+            while pre.right: pre = pre.right   # 找左子树最右节点
+            pre.right = cur.right   # 原右子树接到左子树最右
+            cur.right = cur.left    # 左子树移到右边
+            cur.left = None         # 左置空
+        cur = cur.right            # 移到下一个
+    return root`,
+demo:`# 展开后所有节点只有右指针，形成链表`},
+
+{n:112,t:"路径总和",d:1,c:"tree",idea:"DFS：到叶子时判断剩余 sum 是否为 0。",
+code:`def hasPathSum(root, targetSum):
+    if not root: return False     # 空树没有路径
+    if not root.left and not root.right:   # 是叶子
+        return root.val == targetSum       # 看这条路径和是否达标
+    # 没到叶子，把当前值减掉继续往下
+    return (hasPathSum(root.left, targetSum-root.val) or
+            hasPathSum(root.right, targetSum-root.val))`,
+demo:`# 存在根到叶路径和=目标 返回 True`},
+
+{n:236,t:"二叉树的最近公共祖先",d:2,c:"tree",idea:"后序：左右都找到目标则当前是 LCA；否则返回找到的那边。",
+code:`def lowestCommonAncestor(root, p, q):
+    if not root or root is p or root is q: return root   # 空或命中目标
+    left = lowestCommonAncestor(root.left, p, q)   # 左子树找
+    right = lowestCommonAncestor(root.right, p, q) # 右子树找
+    if left and right: return root   # 两边各有一个 => 当前是 LCA
+    return left or right        # 否则哪边有返回哪边`,
+demo:`# 返回 p,q 的最近公共祖先节点`},
+
+{n:617,t:"合并二叉树",d:1,c:"tree",idea:"递归：两树对应节点相加，空则用另一边。",
+code:`def mergeTrees(r1, r2):
+    if not r1: return r2          # 一边空直接取另一边
+    if not r2: return r1
+    r1.val += r2.val              # 值相加
+    r1.left = mergeTrees(r1.left, r2.left)     # 递归合并左
+    r1.right = mergeTrees(r1.right, r2.right) # 递归合并右
+    return r1`,
+demo:`# 两棵树对应位置相加合并`},
+
+{n:199,t:"二叉树的右视图",d:2,c:"tree",idea:"层序遍历（BFS），每层取最后一个节点。",
+code:`def rightSideView(root):
+    if not root: return []
+    from collections import deque
+    q = deque([root]); ans = []   # 队列做层序, ans 收集右视图
+    while q:                      # 还有层
+        ans.append(q[-1].val)     # 该层最后一个（最右）
+        for _ in range(len(q)):   # 展开当前层
+            node = q.popleft()
+            if node.left: q.append(node.left)
+            if node.right: q.append(node.right)
+    return ans`,
+demo:`# 每层最右节点值组成右视图`},
+
+/* ---------- 二叉搜索树 ---------- */
+{n:98,t:"验证二叉搜索树",d:2,c:"bst",idea:"递归传 (min,max) 范围，每节点值必须在此区间。",
+code:`def isValidBST(root):
+    def ok(node, lo, hi):         # lo,hi 是当前允许的范围
+        if not node: return True  # 空节点合法
+        if not (lo < node.val < hi): return False   # 超出范围非法
+        return ok(node.left, lo, node.val) and ok(node.right, node.val, hi)
+    return ok(root, float("-inf"), float("inf"))`,
+demo:`# 合法 BST 返回 True`},
+
+{n:700,t:"二叉搜索树中的搜索",d:1,c:"bst",idea:"按 左<根<右 往下走，等于就返回。",
+code:`def searchBST(root, val):
+    cur = root
+    while cur:                    # 循环往下
+        if cur.val == val: return cur   # 找到
+        cur = cur.left if val < cur.val else cur.right   # 小走左，大走右
+    return None`,
+demo:`# 找到返回该节点，否则 None`},
+
+{n:230,t:"二叉搜索树中第 K 小的元素",d:2,c:"bst",idea:"BST 中序是升序，中序第 k 个即答案。",
+code:`def kthSmallest(root, k):
+    def dfs(node):
+        if not node: return
+        dfs(node.left)            # 先左
+        dfs.cnt -= 1              # 访问一个节点，计数-1
+        if dfs.cnt == 0:          # 到第 k 个
+            dfs.res = node.val; return
+        dfs(node.right)           # 后右
+    dfs.cnt = k; dfs.res = None
+    dfs(root)
+    return dfs.res`,
+demo:`# 第 k 小的值`},
+
+{n:235,t:"二叉搜索树的最近公共祖先",d:2,c:"bst",idea:"利用 BST 性质：当前值都大在左、都小在右，一左一右即 LCA。",
+code:`def lowestCommonAncestor(root, p, q):
+    cur = root
+    while cur:
+        if p.val < cur.val and q.val < cur.val: cur = cur.left   # 都在左
+        elif p.val > cur.val and q.val > cur.val: cur = cur.right # 都在右
+        else: return cur        # 一左一右（或含自身）=> LCA
+    return None`,
+demo:`# 返回 BST 的 LCA 节点`},
+
+{n:108,t:"将有序数组转换为二叉搜索树",d:1,c:"bst",idea:"每次取中点作根，左右半边递归建，天然平衡。",
+code:`def sortedArrayToBST(nums):
+    def build(l, r):
+        if l > r: return None     # 区间空
+        m = (l+r)//2              # 中点作根 => 平衡
+        node = TreeNode(nums[m])
+        node.left = build(l, m-1) # 左半建左子树
+        node.right = build(m+1, r) # 右半建右子树
+        return node
+    return build(0, len(nums)-1)`,
+demo:`# [-10,-3,0,5,9] => 平衡 BST`},
+
+{n:538,t:"把二叉搜索树转换为累加树",d:2,c:"bst",idea:"反向中序（右→中→左）遍历，累加后缀和。",
+code:`def convertBST(root):
+    s = 0                         # 后缀累加和
+    def dfs(node):
+        nonlocal s
+        if not node: return
+        dfs(node.right)           # 先右（大值）
+        s += node.val; node.val = s   # 累加并写回
+        dfs(node.left)            # 后左
+    dfs(root)
+    return root`,
+demo:`# 每个节点值变成 >= 它的所有节点之和`},
+
+/* ---------- 堆 ---------- */
+{n:215,t:"数组中的第 K 个最大元素",d:2,c:"heap",idea:"维护大小为 K 的最小堆，堆顶即第 K 大。",
+code:`def findKthLargest(nums, k):
+    import heapq
+    h = nums[:k]                  # 先取前 k 个
+    heapq.heapify(h)              # 建成最小堆
+    for x in nums[k:]:            # 后续每个数
+        if x > h[0]:              # 比堆顶（当前第k大）还大
+            heapq.heapreplace(h, x)   # 弹出最小、压入 x
+    return h[0]                   # 堆顶就是第 k 大`,
+demo:`print(findKthLargest([3,2,1,5,6,4], 2))   # 期望 5`},
+
+{n:347,t:"前 K 个高频元素",d:2,c:"heap",idea:"Counter 统计后，用 nlargest 按频次取前 K。",
+code:`def topKFrequent(nums, k):
+    import heapq
+    from collections import Counter
+    cnt = Counter(nums)           # 统计频次
+    return heapq.nlargest(k, cnt.keys(), key=lambda x: cnt[x])   # 按频次取前k`,
+demo:`print(topKFrequent([1,1,1,2,2,3], 2))   # 期望 [1,2]`},
+
+{n:23,t:"合并 K 个升序链表",d:3,c:"heap",idea:"最小堆存 (值, 链表下标, 节点)，每次取最小接上。",
+code:`def mergeKLists(lists):
+    import heapq
+    h = []; dummy = cur = ListNode(0)   # 堆 + 结果哨兵
+    for i, node in enumerate(lists):    # 各链表头入堆
+        if node: heapq.heappush(h, (node.val, i, node))
+    while h:                           # 堆不空
+        v, i, node = heapq.heappop(h)  # 取最小
+        cur.next = node; cur = cur.next   # 接上
+        if node.next: heapq.heappush(h, (node.next.val, i, node.next))   # 该链下一个入堆
+    return dummy.next`,
+demo:`# 合并多个有序链表为一个`},
+
+{n:378,t:"有序矩阵中第 K 小的元素",d:2,c:"heap",idea:"最小堆从 (0,0) 开始，每次弹出最小并把右边/下边入堆，第 k 个即答案。",
+code:`def kthSmallest(matrix, k):
+    import heapq
+    n = len(matrix); h = [(matrix[0][0], 0, 0)]   # 堆存 (值,行,列)
+    seen = {(0,0)}                # 防重复入堆
+    for _ in range(k):            # 弹 k 次
+        v, r, c = heapq.heappop(h)
+        if r+1 < n and (r+1,c) not in seen:   # 下方入堆
+            heapq.heappush(h,(matrix[r+1][c],r+1,c)); seen.add((r+1,c))
+        if c+1 < n and (r,c+1) not in seen:   # 右方入堆
+            heapq.heappush(h,(matrix[r][c+1],r,c+1)); seen.add((r,c+1))
+    return v`,
+demo:`# 矩阵第 k 小`},
+
+{n:295,t:"数据流的中位数",d:3,c:"heap",idea:"大顶堆(小半)+小顶堆(大半)，两堆顶即中位数来源。",
+code:`class MedianFinder:
+    def __init__(self):
+        import heapq
+        self.small = []           # 大顶堆(存负数)装较小一半
+        self.large = []           # 小顶堆装较大一半
+    def addNum(self, num):
+        import heapq
+        heapq.heappush(self.small, -num)   # 先压小堆
+        heapq.heappush(self.large, -heapq.heappop(self.small))   # 平衡：最小移到大堆
+        if len(self.large) > len(self.small):   # 保证小堆>=大堆
+            heapq.heappush(self.small, -heapq.heappop(self.large))
+    def findMedian(self):
+        if len(self.small) > len(self.large): return -self.small[0]
+        return (-self.small[0] + self.large[0]) / 2`,
+demo:`m=MedianFinder(); [m.addNum(x) for x in [1,2,3]]; print(m.findMedian())   # 期望 2`},
+
+{n:973,t:"最接近原点的 K 个点",d:2,c:"heap",idea:"按距离维护大小为 K 的最大堆（或 nsmallest）。",
+code:`def kClosest(points, k):
+    import heapq
+    # 最大堆：距离大的在堆顶，超过 k 就弹出最大的
+    h = []
+    for x, y in points:
+        d = x*x + y*y            # 距离平方（免开方）
+        heapq.heappush(h, (-d, x, y))   # 负数实现最大堆
+        if len(h) > k: heapq.heappop(h)   # 超出 k 弹最远
+    return [[x,y] for _,x,y in h]`,
+demo:`print(kClosest([[1,3],[-2,2]], 1))   # 期望 [[-2,2]]`},
+
+/* ---------- 图 ---------- */
+{n:200,t:"岛屿数量",d:2,c:"graph",idea:"Flood Fill：遇到陆地就 DFS/BFS 把相连陆地染成水，计数+1。",
+code:`def numIslands(grid):
+    if not grid: return 0
+    m, n = len(grid), len(grid[0]); cnt = 0   # 行,列,岛屿数
+    def dfs(r, c):                   # 淹掉一片陆地
+        if r<0 or c<0 or r>=m or c>=n or grid[r][c]!="1": return
+        grid[r][c] = "0"             # 标记为已访问（水）
+        dfs(r+1,c); dfs(r-1,c); dfs(r,c+1); dfs(r,c-1)   # 四方向
+    for i in range(m):
+        for j in range(n):
+            if grid[i][j]=="1":      # 发现新陆地
+                dfs(i,j); cnt += 1   # 淹掉并计数
+    return cnt`,
+demo:`print(numIslands([["1","1","0"],["1","0","0"],["0","0","1"]]))   # 期望 2`},
+
+{n:207,t:"课程表",d:2,c:"graph",idea:"拓扑排序：入度表+队列，能排完(无环)则 True。",
+code:`def canFinish(numCourses, prerequisites):
+    from collections import deque, defaultdict
+    ind = [0]*numCourses; adj = defaultdict(list)   # 入度, 邻接表
+    for a, b in prerequisites:      # b 是 a 的先修
+        adj[b].append(a); ind[a] += 1   # a 入度+1
+    q = deque([i for i in range(numCourses) if ind[i]==0])   # 入度0入队
+    seen = 0                       # 已修课程数
+    while q:
+        u = q.popleft(); seen += 1 # 修完一门
+        for v in adj[u]:            # 它的后继入度-1
+            ind[v] -= 1
+            if ind[v]==0: q.append(v)   # 入度变0入队
+    return seen == numCourses       # 全修完=无环=能完成`,
+demo:`print(canFinish(2, [[1,0]]))   # 期望 True`},
+
+{n:130,t:"被围绕的区域",d:2,c:"graph",idea:"先 DFS 把边界相连的 O 标为临时，其余 O 翻为 X，再把临时还原。",
+code:`def solve(board):
+    if not board: return
+    m, n = len(board), len(board[0])
+    def dfs(r, c):
+        if r<0 or c<0 or r>=m or c>=n or board[r][c]!="O": return
+        board[r][c] = "T"          # 临时标记（边界可达的O）
+        dfs(r+1,c); dfs(r-1,c); dfs(r,c+1); dfs(r,c-1)
+    for i in range(m):             # 上下两行
+        dfs(i,0); dfs(i,n-1)
+    for j in range(n):             # 左右两列
+        dfs(0,j); dfs(m-1,j)
+    for i in range(m):             # 真正的翻转
+        for j in range(n):
+            if board[i][j]=="O": board[i][j]="X"   # 被包围的O->X
+            elif board[i][j]=="T": board[i][j]="O" # 还原边界O`,
+demo:`# 被 X 完全包围的 O 翻成 X，边界相连的保留`},
+
+{n:133,t:"克隆图",d:2,c:"graph",idea:"DFS+visited 字典：克隆过就返回，否则建新节点并克隆邻居。",
+code:`def cloneGraph(node):
+    if not node: return None
+    seen = {}                     # 原节点 -> 克隆节点
+    def dfs(u):
+        if u in seen: return seen[u]   # 克隆过直接返回
+        clone = Node(u.val)       # 建新节点
+        seen[u] = clone           # 先登记，防环重复建
+        for v in u.neighbors:     # 克隆每个邻居
+            clone.neighbors.append(dfs(v))
+        return clone
+    return dfs(node)`,
+demo:`# 深拷贝一张无向图`},
+
+{n:994,t:"腐烂的橘子",d:2,c:"graph",idea:"多源 BFS：所有坏橘子同时开始，每层一分钟，最后看有无好橘子。",
+code:`def orangesRotting(grid):
+    from collections import deque
+    m, n = len(grid), len(grid[0]); q = deque(); fresh = 0   # 队列, 好橘子数
+    for i in range(m):
+        for j in range(n):
+            if grid[i][j]==2: q.append((i,j,0))   # 坏橘子入队，带时间
+            elif grid[i][j]==1: fresh += 1        # 统计好橘子
+    if fresh==0: return 0         # 没有好橘子，0 分钟
+    ans = 0
+    while q:                      # BFS：从队头取，遍历时不改队列
+        r, c, t = q.popleft()
+        ans = t
+        for dr, dc in ((1,0),(-1,0),(0,1),(0,-1)):
+            nr, nc = r+dr, c+dc
+            if 0<=nr<m and 0<=nc<n and grid[nr][nc]==1:   # 相邻好橘子
+                grid[nr][nc]=2; fresh-=1; q.append((nr,nc,t+1))   # 腐烂, 时间+1
+    return ans if fresh==0 else -1   # 还有好橘子则无法全烂`,
+demo:`print(orangesRotting([[2,1,1],[1,1,0],[0,1,1]]))   # 期望 4`},
+
+{n:684,t:"冗余连接",d:2,c:"graph",idea:"并查集：最后一条使成环的边即答案。",
+code:`def findRedundantConnection(edges):
+    parent = list(range(len(edges)+1))   # 并查集父节点
+    def find(x):
+        while parent[x]!=x: parent[x]=parent[parent[x]]; x=parent[x]   # 路径压缩
+        return x
+    for u, v in edges:            # 逐边合并
+        ru, rv = find(u), find(v)
+        if ru==rv: return [u, v]  # 已在同集合 => 成环，返回这条冗余边
+        parent[ru] = rv           # 合并
+    return []`,
+demo:`print(findRedundantConnection([[1,2],[1,3],[2,3]]))   # 期望 [2,3]`},
+
+/* ---------- 回溯 ---------- */
+{n:17,t:"电话号码的字母组合",d:2,c:"back",idea:"回溯：每位数字映射到字母，逐位拼接。",
+code:`def letterCombinations(digits):
+    if not digits: return []
+    mp = {"2":"abc","3":"def","4":"ghi","5":"jkl","6":"mno","7":"pqrs","8":"tuv","9":"wxyz"}
+    ans = []; path = []           # 结果, 当前拼接
+    def back(i):                  # i = 当前处理到第几位数字
+        if i == len(digits):      # 拼满了
+            ans.append("".join(path)); return
+        for ch in mp[digits[i]]:  # 该数字对应的每个字母
+            path.append(ch); back(i+1); path.pop()   # 选/递归/撤
+    back(0)
+    return ans`,
+demo:`print(letterCombinations("23"))`},
+
+{n:39,t:"组合总和",d:2,c:"back",idea:"可重复选：递归时起点不+1；超了就剪枝。",
+code:`def combinationSum(candidates, target):
+    ans = []; path = []           # 结果, 当前组合
+    def back(start, s):           # start=可选起点, s=当前和
+        if s == target: ans.append(path[:]); return   # 正好达标
+        if s > target: return     # 超了剪枝
+        for i in range(start, len(candidates)):   # 从起点往后
+            path.append(candidates[i]); back(i, s+candidates[i]); path.pop()   # 选(可重复)/撤
+    back(0, 0)
+    return ans`,
+demo:`print(combinationSum([2,3,6,7], 7))`},
+
+{n:46,t:"全排列",d:2,c:"back",idea:"每层选一个未用过的数，用 used 标记防重复。",
+code:`def permute(nums):
+    ans = []; path = []; used = [False]*len(nums)   # 结果, 当前排列, 用过标记
+    def back():
+        if len(path)==len(nums): ans.append(path[:]); return   # 排满
+        for i in range(len(nums)):
+            if used[i]: continue   # 用过的跳过
+            used[i]=True; path.append(nums[i]); back(); path.pop(); used[i]=False   # 选/撤
+    back()
+    return ans`,
+demo:`print(permute([1,2,3]))`},
+
+{n:78,t:"子集",d:2,c:"back",idea:"每个数可选可不选；按起点递增保证不重复。",
+code:`def subsets(nums):
+    ans = []; path = []           # 结果, 当前子集
+    def back(start):              # start=从哪开始选
+        ans.append(path[:])       # 每到一个状态都是子集
+        for i in range(start, len(nums)):
+            path.append(nums[i]); back(i+1); path.pop()   # 选当前/递归/撤
+    back(0)
+    return ans`,
+demo:`print(subsets([1,2,3]))`},
+
+{n:79,t:"单词搜索",d:2,c:"back",idea:"DFS 四方向回溯，visited 防走回头，匹配则成功。",
+code:`def exist(board, word):
+    m, n = len(board), len(board[0])
+    def dfs(r, c, k):             # k=当前匹配到 word 第几位
+        if k == len(word): return True   # 全匹配
+        if r<0 or c<0 or r>=m or c>=n or board[r][c]!=word[k]: return False
+        board[r][c] = "#"         # 标记已访问（就地改）
+        ok = (dfs(r+1,c,k+1) or dfs(r-1,c,k+1) or dfs(r,c+1,k+1) or dfs(r,c-1,k+1))
+        board[r][c] = word[k]     # 还原
+        return ok
+    for i in range(m):
+        for j in range(n):
+            if dfs(i, j, 0): return True   # 任意起点出发
+    return False`,
+demo:`print(exist([["A","B","C"],["S","F","C"],["A","D","E"]], "ABCCED"))   # 期望 True`},
+
+{n:131,t:"分割回文串",d:2,c:"back",idea:"回溯切分，每次判断切出的是否回文，是则继续。",
+code:`def partition(s):
+    ans = []; path = []           # 结果, 当前切分
+    def isp(x): return x == x[::-1]   # 判断是否回文
+    def back(start):              # start=当前从哪切
+        if start == len(s): ans.append(path[:]); return   # 切完
+        for end in range(start+1, len(s)+1):   # 枚举切点
+            seg = s[start:end]
+            if isp(seg):          # 是回文才切
+                path.append(seg); back(end); path.pop()   # 选/递归/撤
+    back(0)
+    return ans`,
+demo:`print(partition("aab"))   # 期望 [["a","a","b"],["aa","b"]]`},
+
+/* ---------- 二分查找 ---------- */
+{n:33,t:"搜索旋转排序数组",d:2,c:"bin",idea:"二分：判断哪半边有序，目标是否在有序半边里。",
+code:`def search(nums, target):
+    l, r = 0, len(nums)-1
+    while l <= r:
+        m = (l+r)//2
+        if nums[m]==target: return m
+        if nums[l] <= nums[m]:    # 左半有序
+            if nums[l] <= target < nums[m]: r = m-1   # 目标在左半
+            else: l = m+1         # 否则去右半
+        else:                     # 右半有序
+            if nums[m] < target <= nums[r]: l = m+1   # 目标在右半
+            else: r = m-1
+    return -1`,
+demo:`print(search([4,5,6,7,0,1,2], 0))   # 期望 4`},
+
+{n:34,t:"在排序数组中查找元素的第一个和最后一个位置",d:2,c:"bin",idea:"两次二分：一次找左边界（target 首次出现），一次找右边界。",
+code:`def searchRange(nums, target):
+    def left_bound():             # 找第一个 >= target 的位置
+        l, r = 0, len(nums)-1; res = -1
+        while l <= r:
+            m = (l+r)//2
+            if nums[m] >= target: r = m-1; res = m   # 可能更左
+            else: l = m+1
+        return res
+    def right_bound():            # 找最后一个 <= target 的位置
+        l, r = 0, len(nums)-1; res = -1
+        while l <= r:
+            m = (l+r)//2
+            if nums[m] <= target: l = m+1; res = m   # 可能更右
+            else: r = m-1
+        return res
+    a, b = left_bound(), right_bound()
+    if a==-1 or nums[a]!=target: return [-1,-1]   # 没找到
+    return [a, b]`,
+demo:`print(searchRange([5,7,7,8,8,10], 8))   # 期望 [3,4]`},
+
+{n:153,t:"寻找旋转排序数组中的最小值",d:2,c:"bin",idea:"二分：若中值>右值说明最小值在右半，否则在左半（含中）。",
+code:`def findMin(nums):
+    l, r = 0, len(nums)-1
+    while l < r:
+        m = (l+r)//2
+        if nums[m] > nums[r]: l = m+1   # 中>右 => 最小值在右半
+        else: r = m                   # 否则在左半（含中）
+    return nums[l]`,
+demo:`print(findMin([3,4,5,1,2]))   # 期望 1`},
+
+{n:162,t:"寻找峰值",d:2,c:"bin",idea:"二分：只要右边比中间高，峰值必在右半，否则在左半（含中）。",
+code:`def findPeakElement(nums):
+    l, r = 0, len(nums)-1
+    while l < r:
+        m = (l+r)//2
+        if nums[m] < nums[m+1]: l = m+1   # 右边更高 => 峰值在右
+        else: r = m                       # 否则峰值在左（含中）
+    return l`,
+demo:`print(findPeakElement([1,2,3,1]))   # 期望 2`},
+
+{n:69,t:"x 的平方根",d:1,c:"bin",idea:"二分答案：找最大的 mid 使 mid*mid <= x。",
+code:`def mySqrt(x):
+    l, r = 0, x                    # 答案在 [0, x]
+    while l <= r:
+        m = (l+r)//2
+        if m*m <= x: l = m+1       # mid 可行，试更大
+        else: r = m-1              # 太大，缩小
+    return r`,
+demo:`print(mySqrt(8))   # 期望 2`},
+
+/* ---------- 动态规划 ---------- */
+{n:70,t:"爬楼梯",d:1,c:"dp",idea:"dp[i]=dp[i-1]+dp[i-2]，滚动即可。",
+code:`def climbStairs(n):
+    if n < 3: return n            # 1阶1种, 2阶2种
+    a, b = 1, 2                   # a=dp[i-2], b=dp[i-1]
+    for _ in range(3, n+1):
+        a, b = b, a+b             # 滚动：新b = 前两项之和
+    return b`,
+demo:`print(climbStairs(5))   # 期望 8`},
+
+{n:62,t:"不同路径",d:2,c:"dp",idea:"dp[i][j]=dp[i-1][j]+dp[i][j-1]，首行首列=1。",
+code:`def uniquePaths(m, n):
+    dp = [[1]*n for _ in range(m)]   # 初始化：第一行/列都只有1种走法
+    for i in range(1, m):            # 从第二行开始
+        for j in range(1, n):       # 从第二列开始
+            dp[i][j] = dp[i-1][j] + dp[i][j-1]   # 上 + 左
+    return dp[m-1][n-1]`,
+demo:`print(uniquePaths(3, 7))   # 期望 28`},
+
+{n:64,t:"最小路径和",d:2,c:"dp",idea:"dp[i][j]=grid[i][j]+min(上,左)，边界只能从一边来。",
+code:`def minPathSum(grid):
+    m, n = len(grid), len(grid[0])
+    dp = [[0]*n for _ in range(m)]
+    dp[0][0] = grid[0][0]          # 起点
+    for j in range(1, n): dp[0][j] = dp[0][j-1] + grid[0][j]   # 首行只能从左
+    for i in range(1, m): dp[i][0] = dp[i-1][0] + grid[i][0]   # 首列只能从上
+    for i in range(1, m):
+        for j in range(1, n):
+            dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1])   # 当前 + 最小邻居
+    return dp[m-1][n-1]`,
+demo:`print(minPathSum([[1,3,1],[1,5,1],[4,2,1]]))   # 期望 7`},
+
+{n:121,t:"买卖股票的最佳时机",d:2,c:"dp",idea:"记录历史最低价，每天算「今天卖」的利润取最大。",
+code:`def maxProfit(prices):
+    minp = float("inf"); ans = 0   # minp=最低买入价, ans=最大利润
+    for p in prices:               # 遍历每天价格
+        minp = min(minp, p)        # 更新最低买入
+        ans = max(ans, p - minp)   # 今天卖出能赚多少
+    return ans`,
+demo:`print(maxProfit([7,1,5,3,6,4]))   # 期望 5`},
+
+{n:300,t:"最长递增子序列",d:2,c:"dp",idea:"dp[i]=以 i 结尾的 LIS；对每个 i 看前面比它小的取最大+1。",
+code:`def lengthOfLIS(nums):
+    dp = [1]*len(nums)            # dp[i] 至少是自己，长度1
+    for i in range(len(nums)):    # 当前数
+        for j in range(i):        # 前面的数
+            if nums[j] < nums[i]:  # 能接在 j 后面
+                dp[i] = max(dp[i], dp[j]+1)   # 更新
+    return max(dp) if dp else 0`,
+demo:`print(lengthOfLIS([10,9,2,5,3,7,101,18]))   # 期望 4`},
+
+{n:1143,t:"最长公共子序列",d:2,c:"dp",idea:"dp[i][j]：两串前缀的 LCS；相等+1，否则取上/左最大。",
+code:`def longestCommonSubsequence(text1, text2):
+    m, n = len(text1), len(text2)
+    dp = [[0]*(n+1) for _ in range(m+1)]   # 多一行一列方便边界
+    for i in range(1, m+1):
+        for j in range(1, n+1):
+            if text1[i-1]==text2[j-1]: dp[i][j]=dp[i-1][j-1]+1   # 字符相等
+            else: dp[i][j]=max(dp[i-1][j], dp[i][j-1])   # 取上或左
+    return dp[m][n]`,
+demo:`print(longestCommonSubsequence("abcde","ace"))   # 期望 3`},
+
+{n:72,t:"编辑距离",d:3,c:"dp",idea:"dp[i][j]：word1前i和word2前j的编辑距离；三操作取最小+1。",
+code:`def minDistance(word1, word2):
+    m, n = len(word1), len(word2)
+    dp = [[0]*(n+1) for _ in range(m+1)]
+    for i in range(m+1): dp[i][0] = i   # 删到空
+    for j in range(n+1): dp[0][j] = j   # 增到目标
+    for i in range(1, m+1):
+        for j in range(1, n+1):
+            if word1[i-1]==word2[j-1]: dp[i][j]=dp[i-1][j-1]   # 相同不需操作
+            else: dp[i][j]=1+min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])   # 删/增/改
+    return dp[m][n]`,
+demo:`print(minDistance("horse","ros"))   # 期望 3`},
+
+{n:198,t:"打家劫舍",d:2,c:"dp",idea:"dp[i]=max(偷i:dp[i-2]+v, 不偷:dp[i-1])，滚动两变量。",
+code:`def rob(nums):
+    if not nums: return 0
+    if len(nums)<3: return max(nums)   # 1或2间取大
+    a, b = nums[0], max(nums[0], nums[1])   # a=前前, b=前一
+    for i in range(2, len(nums)):
+        a, b = b, max(a+nums[i], b)   # 偷: a+当前; 不偷: b
+    return b`,
+demo:`print(rob([2,7,9,3,1]))   # 期望 12`},
+
+{n:322,t:"零钱兑换",d:2,c:"dp",idea:"dp[i]=凑成金额i的最少硬币 = min(dp[i-coin])+1。",
+code:`def coinChange(coins, amount):
+    dp = [float("inf")]*(amount+1); dp[0] = 0   # dp[0]=0, 其余先无穷大
+    for i in range(1, amount+1):
+        for c in coins:              # 试每个硬币
+            if c <= i: dp[i] = min(dp[i], dp[i-c]+1)   # 用一枚 c
+    return dp[amount] if dp[amount]!=float("inf") else -1`,
+demo:`print(coinChange([1,2,5], 11))   # 期望 3`},
+
+{n:139,t:"单词拆分",d:2,c:"dp",idea:"dp[i]=前i字符能否由字典拼成；枚举最后一段是否在字典。",
+code:`def wordBreak(s, wordDict):
+    st = set(wordDict); dp = [False]*(len(s)+1); dp[0] = True   # dp[0]=空串可拼
+    for i in range(1, len(s)+1):
+        for j in range(i):          # 枚举最后一段起点 j
+            if dp[j] and s[j:i] in st:   # 前j可拼 且 段在字典
+                dp[i] = True; break   # 标记可拼，跳出
+    return dp[len(s)]`,
+demo:`print(wordBreak("leetcode", ["leet","code"]))   # 期望 True`},
+
+/* ---------- 贪心 ---------- */
+{n:55,t:"跳跃游戏",d:2,c:"greedy",idea:"维护能到达的最远 reach，每步更新，能到末尾即 True。",
+code:`def canJump(nums):
+    reach = 0                     # 当前能跳到的最远下标
+    for i, x in enumerate(nums):
+        if i > reach: return False   # 当前位置都到不了，失败
+        reach = max(reach, i+x)   # 更新最远
+        if reach >= len(nums)-1: return True   # 能到末尾
+    return True`,
+demo:`print(canJump([2,3,1,1,4]))   # 期望 True`},
+
+{n:45,t:"跳跃游戏 II",d:2,c:"greedy",idea:"贪心跳：在当前可跳区间内选能到最远的下一步，步数+1。",
+code:`def jump(nums):
+    if len(nums)<2: return 0      # 已在终点
+    ans = 0; cur_end = 0; farthest = 0   # ans步数, cur_end当前跳能到的边界, farthest最远
+    for i in range(len(nums)-1):  # 不遍历最后一位
+        farthest = max(farthest, i+nums[i])   # 更新最远
+        if i == cur_end:          # 到达当前跳的边界
+            ans += 1; cur_end = farthest   # 必须再跳一步，更新边界
+    return ans`,
+demo:`print(jump([2,3,1,1,4]))   # 期望 2`},
+
+{n:134,t:"加油站",d:2,c:"greedy",idea:"总油>=总耗则必有解；累加剩余，变负则从下一站重新开始。",
+code:`def canCompleteCircuit(gas, cost):
+    total = 0; tank = 0; start = 0   # total全程余量, tank当前余量, start起点
+    for i in range(len(gas)):
+        total += gas[i]-cost[i]   # 全程余量累加
+        tank += gas[i]-cost[i]    # 当前余量累加
+        if tank < 0:              # 到不了下一步
+            start = i+1; tank = 0   # 从下一站重开
+    return start if total >= 0 else -1   # 全程够才可能有解`,
+demo:`print(canCompleteCircuit([1,2,3,4,5],[1,2,3,4,5]))   # 期望 0`},
+
+{n:406,t:"根据身高重建队列",d:2,c:"greedy",idea:"按身高降序、同身高k升序排，再按k插入（k即前面有几人）。",
+code:`def reconstructQueue(people):
+    people.sort(key=lambda x: (-x[0], x[1]))   # 高->矮, 同高k小在前
+    ans = []
+    for h, k in people:
+        ans.insert(k, [h, k])   # 第k个位置插入（前面恰有k个更高/等高的）
+    return ans`,
+demo:`print(reconstructQueue([[7,0],[4,4],[7,1],[5,0],[6,1],[5,2]]))`},
+
+{n:56,t:"合并区间",d:2,c:"greedy",idea:"按左端点排序，能接上就合并，否则新开。",
+code:`def merge(intervals):
+    intervals.sort(key=lambda x: x[0])   # 按左端点排序
+    ans = []
+    for it in intervals:
+        if ans and it[0] <= ans[-1][1]:   # 与上一个重叠
+            ans[-1][1] = max(ans[-1][1], it[1])   # 合并（扩右端点）
+        else:
+            ans.append(it)               # 不重叠，新区间
+    return ans`,
+demo:`print(merge([[1,3],[2,6],[8,10],[15,18]]))   # 期望 [[1,6],[8,10],[15,18]]`},
+
+{n:621,t:"任务调度器",d:2,c:"greedy",idea:"最多任务数决定冷却：ans=max((最多-1)*(n+1)+同最多的个数, 总任务数)。",
+code:`def leastInterval(tasks, n):
+    from collections import Counter
+    cnt = Counter(tasks); mx = max(cnt.values())   # 最多任务数
+    same = sum(1 for v in cnt.values() if v==mx)   # 并列最多的任务种数
+    # 公式：每轮 n+1 个槽，最多任务要 (mx-1) 轮，最后一轮 same 个
+    return max((mx-1)*(n+1)+same, len(tasks))`,
+demo:`print(leastInterval(["A","A","A","B","B","B"], 2))   # 期望 8`},
+
+/* ---------- 位运算 ---------- */
+{n:136,t:"只出现一次的数字",d:1,c:"bit",idea:"全员异或：成对抵消，剩下的就是只出现一次的。",
+code:`def singleNumber(nums):
+    ans = 0
+    for x in nums: ans ^= x       # 异或：a^a=0, a^0=a，成对抵消
+    return ans`,
+demo:`print(singleNumber([4,1,2,1,2]))   # 期望 4`},
+
+{n:137,t:"只出现一次的数字 II",d:2,c:"bit",idea:"统计每一位上1的个数，对3取模即只出现一次数的该位。",
+code:`def singleNumber(nums):
+    ans = 0
+    for i in range(32):           # 遍历 32 位
+        bit = 0
+        for x in nums: bit += (x >> i) & 1   # 第 i 位为1的个数
+        if bit % 3: ans |= (1 << i)   # 不能被3整除 => 该位是1
+    return ans if ans < (1<<31) else ans - (1<<32)   # 处理负数补码`,
+demo:`print(singleNumber([2,2,3,2]))   # 期望 3`},
+
+{n:260,t:"只出现一次的数字 III",d:2,c:"bit",idea:"全员异或得两数之差；按某一位1分组，两组各异或得两个数。",
+code:`def singleNumbers(nums):
+    xor = 0
+    for x in nums: xor ^= x       # 两不同数异或结果
+    low = xor & (-xor)            # 取最低位1（分组依据）
+    a = b = 0
+    for x in nums:
+        if x & low: a ^= x        # 该位为1的一组
+        else: b ^= x              # 该位为0的一组
+    return [a, b]`,
+demo:`print(singleNumbers([1,2,1,3,2,5]))   # 期望 [3,5]`},
+
+{n:191,t:"位1的个数",d:1,c:"bit",idea:"n & (n-1) 每次消去最低位1，数消了几次。",
+code:`def hammingWeight(n):
+    cnt = 0
+    while n:
+        n &= n-1                  # 消去最低位的1
+        cnt += 1                  # 计数
+    return cnt`,
+demo:`print(hammingWeight(0b00000000000000000000000000001011))   # 期望 3`},
+
+{n:231,t:"2 的幂",d:1,c:"bit",idea:"2的幂二进制只有一个1：n>0 且 n&(n-1)==0。",
+code:`def isPowerOfTwo(n):
+    return n > 0 and (n & (n-1)) == 0   # 只有1个1 且 正数`,
+demo:`print(isPowerOfTwo(16))   # 期望 True`},
+
+{n:338,t:"比特位计数",d:2,c:"bit",idea:"dp[i]=dp[i>>1]+(i&1)：i 比 i/2 多的最低位。",
+code:`def countBits(n):
+    ans = [0]*(n+1)
+    for i in range(1, n+1):
+        ans[i] = ans[i>>1] + (i & 1)   # 右移后1的个数 + 最低位
+    return ans`,
+demo:`print(countBits(5))   # 期望 [0,1,1,2,1,2]`},
+
+/* ---------- 设计 ---------- */
+{n:146,t:"LRU 缓存",d:3,c:"design",idea:"OrderedDict：最近用移到末尾，超容量删最旧（队首）。",
+code:`def LRUCache(capacity):
+    from collections import OrderedDict
+    cache = OrderedDict()         # 保持插入/访问顺序
+    def get(key):
+        if key not in cache: return -1
+        cache.move_to_end(key)    # 访问过 => 移到末尾（最新）
+        return cache[key]
+    def put(key, value):
+        if key in cache: cache.move_to_end(key)   # 已存在先移到末尾
+        cache[key] = value
+        if len(cache) > capacity:   # 超容量
+            cache.popitem(last=False)   # 删最旧（队首）
+    return get, put`,
+demo:`g,p=LRUCache(2); p(1,1); p(2,2); print(g(1)); p(3,3); print(g(2))   # 1, -1`},
+
+{n:225,t:"用队列实现栈",d:1,c:"design",idea:"入队时把前面元素依次移到新元素后面，使队首=栈顶。",
+code:`def StackFromQueue():
+    from collections import deque
+    q = deque()
+    def push(x):
+        q.append(x)
+        for _ in range(len(q)-1): q.append(q.popleft())   # 前面的移到后面
+    def pop(): return q.popleft()   # 队首即栈顶
+    def top(): return q[0]
+    def empty(): return not q
+    return push, pop, top, empty`,
+demo:`push, pop, top, empty = StackFromQueue()
+push(1); push(2); print(top()); print(pop()); print(empty())   # 期望 2, 2, False`},
+
+{n:232,t:"用栈实现队列",d:1,c:"design",idea:"两个栈：入栈接新元素，出时把入栈倒到出栈，出栈空再倒。",
+code:`def QueueFromStack():
+    in_s = []; out_s = []         # 入栈, 出栈
+    def push(x): in_s.append(x)   # 永远压入栈
+    def pop():
+        if not out_s:             # 出栈空才倒
+            while in_s: out_s.append(in_s.pop())   # 入栈元素倒过来
+        return out_s.pop()        # 出栈顶即队首
+    def peek():
+        if not out_s:
+            while in_s: out_s.append(in_s.pop())
+        return out_s[-1]
+    def empty(): return not in_s and not out_s
+    return push, pop, peek, empty`,
+demo:`# push(1),push(2),pop()=>1`},
+
+{n:208,t:"实现 Trie（前缀树）",d:2,c:"design",idea:"每节点是 {children:dict, is_end:bool}，逐字符下钻。",
+code:`class Trie:
+    def __init__(self):
+        self.children = {}        # 子节点字符->节点
+        self.is_end = False       # 是否单词结尾
+    def insert(self, word):
+        node = self
+        for ch in word:           # 逐字符下钻，没有就建
+            node = node.children.setdefault(ch, Trie())
+        node.is_end = True        # 标记结尾
+    def search(self, word):
+        node = self
+        for ch in word:
+            if ch not in node.children: return False   # 不存在
+            node = node.children[ch]
+        return node.is_end        # 是否完整单词
+    def startsWith(self, prefix):
+        node = self
+        for ch in prefix:
+            if ch not in node.children: return False
+            node = node.children[ch]
+        return True`,
+demo:`t=Trie(); t.insert("apple"); print(t.search("apple"), t.startsWith("app"))   # True True`},
+
+{n:380,t:"O(1) 时间插入、删除和获取随机元素",d:2,c:"design",idea:"列表存值（O(1)随机），字典存值->下标；删除时与末位交换再弹。",
+code:`class RandomizedSet:
+    def __init__(self):
+        self.vals = []            # 值列表（随机用）
+        self.pos = {}             # 值 -> 下标
+    def insert(self, val):
+        if val in self.pos: return False   # 已存在
+        self.pos[val] = len(self.vals)   # 记录下标
+        self.vals.append(val); return True
+    def remove(self, val):
+        if val not in self.pos: return False
+        i = self.pos[val]; last = self.vals[-1]   # 末位元素
+        self.vals[i] = last; self.pos[last] = i   # 末位换到 i
+        self.vals.pop(); del self.pos[val]         # 删末位 + 删记录
+        return True
+    def getRandom(self):
+        import random
+        return random.choice(self.vals)   # 等概率随机`,
+demo:`r=RandomizedSet(); r.insert(1); r.insert(2); print(r.getRandom())`},
+
+/* ---------- 数学 ---------- */
+{n:7,t:"整数反转",d:1,c:"math",idea:"反复 %10 取末位、//10 去末位，乘10累加并判溢出。",
+code:`def reverse(x):
+    neg = x < 0; x = abs(x)       # 先取绝对值处理
+    ans = 0
+    while x:
+        ans = ans*10 + x%10       # 当前末位接到结果末尾
+        x //= 10                  # 去掉末位
+        if ans > 2**31-1: return 0   # 溢出返回0
+    return -ans if neg else ans`,
+demo:`print(reverse(123)); print(reverse(-123))   # 321, -321`},
+
+{n:9,t:"回文数",d:1,c:"math",idea:"负数/末位0的非零数不是；反转一半比较（避免溢出）。",
+code:`def isPalindrome(x):
+    if x < 0 or (x%10==0 and x!=0): return False   # 负数和末位0非零都不是
+    rev = 0
+    while x > rev:                # 只反转一半
+        rev = rev*10 + x%10; x //= 10
+    return x == rev or x == rev//10   # 偶数位相等 或 奇数位去中间`,
+demo:`print(isPalindrome(121))   # 期望 True`},
+
+{n:13,t:"罗马数字转整数",d:1,c:"math",idea:"右<左则减，否则加（小值在大值左边要减）。",
+code:`def romanToInt(s):
+    mp = {"I":1,"V":5,"X":10,"L":50,"C":100,"D":500,"M":1000}
+    ans = 0
+    for i in range(len(s)):
+        if i+1 < len(s) and mp[s[i]] < mp[s[i+1]]: ans -= mp[s[i]]   # 左边小 => 减
+        else: ans += mp[s[i]]      # 否则加
+    return ans`,
+demo:`print(romanToInt("MCMXCIV"))   # 期望 1994`},
+
+{n:43,t:"字符串相乘",d:2,c:"math",idea:"竖式：结果第 i+j 位累加 a[i]*b[j]，最后处理进位。",
+code:`def multiply(num1, num2):
+    if num1=="0" or num2=="0": return "0"   # 含0直接返回
+    a, b = num1[::-1], num2[::-1]   # 反转方便从低位算
+    res = [0]*(len(a)+len(b))       # 结果位数最多两长度之和
+    for i in range(len(a)):
+        for j in range(len(b)):
+            res[i+j] += int(a[i])*int(b[j])   # 累加到对应位
+    for k in range(len(res)):       # 统一处理进位
+        if res[k] >= 10:
+            res[k+1] += res[k]//10; res[k] %= 10
+    return "".join(map(str, res[::-1])).lstrip("0") or "0"`,
+demo:`print(multiply("123","456"))   # 期望 "56088"`},
+
+{n:50,t:"Pow(x, n)",d:2,c:"math",idea:"快速幂：n偶则平方后指数减半，n奇则乘一个x。",
+code:`def myPow(x, n):
+    if n < 0: x, n = 1/x, -n       # 负指数取倒数
+    ans = 1
+    while n:
+        if n & 1: ans *= x         # n 当前最低位为1 => 乘上 x
+        x *= x; n >>= 1            # x 平方，指数右移一位
+    return ans`,
+demo:`print(myPow(2.0, 10))   # 期望 1024.0`},
+
+{n:172,t:"阶乘后的零",d:1,c:"math",idea:"末尾0来自因子5，统计 n 中 5 的个数（5,25,125…）。",
+code:`def trailingZeroes(n):
+    ans = 0
+    while n:
+        n //= 5                   # 每5个贡献一个5
+        ans += n                  # 累加各次幂贡献
+    return ans`,
+demo:`print(trailingZeroes(100))   # 期望 24`},
+
+{n:202,t:"快乐数",d:1,c:"math",idea:"反复求各位平方和，出现1则快乐；用集合检测循环（非快乐会循环）。",
+code:`def isHappy(n):
+    seen = set()                  # 记录出现过的数，检测循环
+    while n != 1 and n not in seen:
+        seen.add(n)
+        s = 0
+        while n: s += (n%10)**2; n //= 10   # 各位平方和
+        n = s
+    return n == 1`,
+demo:`print(isHappy(19))   # 期望 True`},
+
+{n:204,t:"计数质数",d:2,c:"math",idea:"埃氏筛：从2起划掉倍数，剩下的是质数。",
+code:`def countPrimes(n):
+    if n < 3: return 0            # 小于2无质数
+    is_p = [True]*(n)             # is_p[i] 是否为质数候选
+    is_p[0] = is_p[1] = False
+    for i in range(2, int(n**0.5)+1):   # 只需到 sqrt(n)
+        if is_p[i]:
+            for j in range(i*i, n, i): is_p[j] = False   # 划掉 i 的倍数
+    return sum(is_p)`,
+demo:`print(countPrimes(10))   # 期望 4`},
+];
+
+/* ===== 渲染逻辑 ===== */
+const D = {1:"简单",2:"中等",3:"困难"};
+const main = document.getElementById("main");
+const catsEl = document.getElementById("cats");
+let curCat = "all";
+
+
+/* ===================== 闯关逻辑 ===================== */
+const SKEY = "lcgame_v1";
+const RANKS = [["青铜",0],["白银",120],["黄金",260],["铂金",420],["钻石",600],["王者",800]];
+const DIFF = {1:["d1","简单"],2:["d2","中等"],3:["d3","困难"]};
+const CDN = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
+
+// 章节（保持 CATS 定义顺序，只保留有题的）
+const WORLDS = Object.keys(CATS).filter(c => P.some(p => p.c === c));
+// 给每题一个稳定全局 id（P 中的下标）
+P.forEach((p,i)=> p.id = i);
+const LEVELS = P.map(p => p.id);
+
+function loadState(){
+  try{ return JSON.parse(localStorage.getItem(SKEY)) || {}; }catch(e){ return {}; }
+}
+function saveState(s){ localStorage.setItem(SKEY, JSON.stringify(s)); }
+let S = Object.assign({passed:{}, practice:false, last:null, streak:0}, loadState());
+
+function isPassed(id){ return !!S.passed[id]; }
+function worldPassed(wi){ return LEVELS.filter(id=>P[id].c===WORLDS[wi]).every(isPassed); }
+function worldUnlocked(wi){ return wi===0 || worldPassed(wi-1) || S.practice; }
+function levelUnlocked(id){
+  if(S.practice) return true;
+  const wi = WORLDS.indexOf(P[id].c);
+  const list = LEVELS.filter(x=>P[x].c===WORLDS[wi]);
+  const pos = list.indexOf(id);
+  if(!worldUnlocked(wi)) return false;
+  return pos===0 || isPassed(list[pos-1]);
+}
+function xp(){ return LEVELS.filter(isPassed).length*10 + WORLDS.filter((_,i)=>worldPassed(i)).length*20; }
+function rankOf(x){ let r="青铜"; for(const [n,t] of RANKS){ if(x>=t) r=n; } return r; }
+const todayStr = ()=> new Date().toISOString().slice(0,10);
+function yesterdayStr(){ const d=new Date(); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); }
+
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),1800); }
+function confetti(){
+  const cols=["#39d98a","#5cc8ff","#ffcb6b","#ff6b6b","#c08bff"];
+  for(let i=0;i<60;i++){ const c=document.createElement("div"); c.className="confetti";
+    c.style.left=Math.random()*100+"vw"; c.style.background=cols[i%cols.length];
+    c.style.animation=`fall ${1.2+Math.random()*1.2}s linear forwards`; c.style.animationDelay=(Math.random()*.3)+"s";
+    document.body.appendChild(c); setTimeout(()=>c.remove(),2800); }
+}
+
+/* ---- 渲染：关卡地图 ---- */
+function renderHeader(){
+  const x=xp(), total=LEVELS.length, cleared=LEVELS.filter(isPassed).length;
+  document.getElementById("xpnum").textContent = x+" XP";
+  document.getElementById("xpfill").style.width = Math.min(100, x/ (total*10+WORLDS.length*20) *100)+"%";
+  document.getElementById("rank").textContent = rankOf(x);
+  document.getElementById("cleared").textContent = cleared+"/"+total;
+  document.getElementById("streak").textContent = S.streak||0;
+  document.getElementById("practiceBtn").classList.toggle("on", !!S.practice);
+}
+function renderMap(){
+  document.getElementById("mapView").classList.remove("hidden");
+  document.getElementById("worldView").classList.add("hidden");
+  document.getElementById("modal").classList.add("hidden");
+  const g=document.getElementById("worldGrid"); g.innerHTML="";
+  WORLDS.forEach((cat,wi)=>{
+    const c=CATS[cat]; const list=LEVELS.filter(id=>P[id].c===cat);
+    const done=list.filter(isPassed).length; const unlocked=worldUnlocked(wi);
+    const card=document.createElement("div");
+    card.className="world"+(unlocked?"":" locked");
+    card.innerHTML=`<div class="wnum">${wi+1}</div>
+      <div class="wname">${c.name}</div>
+      <div class="wmnem">📜 ${c.mnemonic}</div>
+      <div class="wprog"><span>${done}/${list.length}</span>
+        <div class="wbar"><i style="width:${done/list.length*100}%"></i></div>
+        <span>${done===list.length?"★通关":(unlocked?"可挑战":"🔒")}</span></div>
+      ${unlocked?"":'<div class="lockbadge">🔒</div>'}`;
+    if(unlocked) card.onclick=()=>renderWorld(wi);
+    g.appendChild(card);
+  });
+  renderHeader();
+}
+function renderWorld(wi){
+  document.getElementById("mapView").classList.add("hidden");
+  document.getElementById("worldView").classList.remove("hidden");
+  const cat=WORLDS[wi], c=CATS[cat];
+  document.getElementById("worldTtl").textContent = `第 ${wi+1} 关 · ${c.name}（${c.mnemonic}）`;
+  const list=LEVELS.filter(id=>P[id].c===cat);
+  const box=document.getElementById("lvList"); box.innerHTML="";
+  list.forEach(id=>{
+    const p=P[id]; const [dc,dl]=DIFF[p.d]||DIFF[2]; const passed=isPassed(id); const unl=levelUnlocked(id);
+    const el=document.createElement("div");
+    el.className="lv"+(passed?" passed":"")+(unl?"":" locked");
+    el.innerHTML=`<div class="lvno">${p.n}</div>
+      <div class="lvmain"><div class="lvtitle">${p.t}</div>
+        <div class="lvsub">#${p.n} · <span class="diff ${dc}">${dl}</span> ${unl?"":"· 🔒未解锁"}</div></div>
+      <div>${passed?'<span class="star">★</span>':(unl?'▶':'🔒')}</div>`;
+    if(unl) el.onclick=()=>openLevel(id);
+    box.appendChild(el);
+  });
+}
+
+/* ---- 弹窗：单关 ---- */
+function slug(t){ return t.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"")
+  .replace(/^([0-9]+)-/,"$1-").slice(0,60); }
+function openLevel(id){
+  const p=P[id], c=CATS[p.c];
+  const m=document.getElementById("modal");
+  m.classList.remove("hidden");
+  m.innerHTML=`<div class="mask" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="mhead">
+        <div><div class="mtitle">#${p.n} ${p.t}</div>
+          <div class="msub">${c.name} · 难度 <span class="diff ${DIFF[p.d][0]}">${DIFF[p.d][1]}</span>
+            · <a href="https://leetcode.cn/problems/${slug(p.t)}/" target="_blank">原题↗</a></div></div>
+        <button class="x" onclick="closeModal()">✕</button>
+      </div>
+
+      <div class="block">
+        <div class="bt">📜 背记框架（${c.name}）</div>
+        <div class="frame">${esc(c.frame)}</div>
+        <div class="mnem">口诀：${esc(c.mnemonic)}</div>
+      </div>
+
+      <div class="block">
+        <div class="bt">💡 思路</div>
+        <div class="frame">${esc(p.idea||"见答案注释。")}</div>
+      </div>
+
+      <div class="block">
+        <div class="bt">🧠 套路选择题 <span style="color:var(--sub);font-weight:500">（答对才能过关）</span></div>
+        <div class="quiz" id="quiz"></div>
+        <div class="qhint" id="qhint"></div>
+      </div>
+
+      <div class="block">
+        <div class="bt">📝 答案（逐行注释） <span class="reveal" id="reveal">▸ 点击展开</span></div>
+        <pre class="code hidden" id="ans">${esc(p.code)}</pre>
+      </div>
+
+      <div class="block">
+        <div class="bt">🖥️ 运行窗口（仿面试，可选练习）</div>
+        <textarea class="ta" id="ta" spellcheck="false">${esc(p.code)}</textarea>
+        <div class="runrow">
+          <button class="rbtn" onclick="runCode(${id})">▶ 运行</button>
+          <button class="rbtn ghost" onclick="resetCode(${id})">重置</button>
+        </div>
+        <div class="out" id="out">（改完代码点运行；首次需联网加载 Python 运行时）</div>
+      </div>
+
+      <button class="passbtn" id="pass" disabled>✅ 我掌握了，过关！</button>
+    </div></div>`;
+
+  // 展开答案
+  document.getElementById("reveal").onclick=function(){
+    const a=document.getElementById("ans"); a.classList.toggle("hidden");
+    this.textContent = a.classList.contains("hidden")?"▸ 点击展开":"▾ 收起";
+  };
+
+  // 选择题
+  buildQuiz(p);
+
+  // 已通关则直接可再过关
+  if(isPassed(id)){ const b=document.getElementById("pass"); b.disabled=false;
+    document.getElementById("qhint").textContent="本课已通关 ★ 可复习后再点过关"; }
+  document.getElementById("pass").onclick=()=>passLevel(id);
+}
+function closeModal(){ document.getElementById("modal").classList.add("hidden"); }
+
+function buildQuiz(p){
+  const opts=WORLDS.map(c=>({name:CATS[c].name, ok:c===p.c}));
+  // 洗牌
+  for(let i=opts.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [opts[i],opts[j]]=[opts[j],opts[i]]; }
+  const q=document.getElementById("quiz"); q.innerHTML="";
+  opts.forEach(o=>{
+    const b=document.createElement("div"); b.className="opt"; b.textContent=o.name;
+    b.onclick=()=>{
+      if(b.classList.contains("ok")||b.classList.contains("no")) return;
+      if(o.ok){ b.classList.add("ok"); document.getElementById("qhint").textContent="✅ 答对！框架套路认对了，去复刻答案吧。";
+        document.getElementById("pass").disabled=false; }
+      else{ b.classList.add("no"); document.getElementById("qhint").textContent="❌ 不对，想想这题用哪类套路（看上方框架）。"; }
+      // 标出正确项
+      [...q.children].forEach(ch=>{ if(ch.textContent===CATS[p.c].name) ch.classList.add("ok"); });
+    };
+    q.appendChild(b);
+  });
+}
+
+function passLevel(id){
+  const before=xp();
+  S.passed[id]=true;
+  // 连续打卡
+  const t=todayStr();
+  if(S.last!==t){ S.streak = (S.last===yesterdayStr()) ? (S.streak||0)+1 : 1; S.last=t; }
+  saveState(S);
+  const after=xp();
+  closeModal(); renderMap();
+  toast(`🎉 过关！+${after-before} XP` + (S.streak>1?` · 🔥连击 ${S.streak}`:""));
+  confetti();
+}
+
+/* ===================== Pyodide 运行 ===================== */
+let pyodide=null, pyLoading=false;
+async function loadPy(){
+  if(pyodide) return;
+  if(pyLoading) { while(pyLoading) await new Promise(r=>setTimeout(r,100)); return; }
+  pyLoading=true;
+  try{ pyodide = await loadPyodide({ indexURL: CDN }); }
+  finally{ pyLoading=false; }
+}
+async function runCode(id){
+  const ta=document.getElementById("ta"), out=document.getElementById("out");
+  out.className="out"; out.textContent="正在加载 Python 运行时…";
+  try{
+    await loadPy();
+    out.textContent="运行中…";
+    let buf="";
+    pyodide.setStdout({batched:s=>buf+=s+"\n"});
+    pyodide.setStderr({batched:s=>buf+=s+"\n"});
+    try{ await pyodide.runPythonAsync(ta.value); out.className="out"; out.textContent=buf||"（无输出）"; }
+    catch(err){ out.className="out err"; out.textContent=String(err); }
+  }catch(e){
+    out.className="out err";
+    out.textContent="⚠ 无法加载 Python 运行时（运行窗口需联网）。\n错误："+e;
+  }
+}
+function resetCode(id){ const p=P[id]; document.getElementById("ta").value=p.code;
+  document.getElementById("out").textContent="（已重置为原答案）"; }
+
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* 按钮 */
+document.getElementById("backBtn").onclick=renderMap;
+document.getElementById("practiceBtn").onclick=()=>{ S.practice=!S.practice; saveState(S); renderMap();
+  toast(S.practice?"🔓 练习模式：已解锁全部关卡":"🔒 已关闭练习模式"); };
+document.getElementById("resetBtn").onclick=()=>{ if(confirm("确定清空所有通关进度？")){
+  S={passed:{},practice:S.practice,last:null,streak:0}; saveState(S); renderMap(); toast("已重置进度"); } };
+
+renderMap();
+</script>
+</body>
+</html>
